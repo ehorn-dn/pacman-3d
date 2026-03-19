@@ -1037,6 +1037,73 @@ body.swipe-mode #touch-controls {
         left: 8px;
         height: 18px;
     }
+
+    #help-overlay {
+        align-items: flex-start;
+    }
+
+    #help-content {
+        max-height: 100vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 12px 16px;
+    }
+
+    #help-title {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    #help-columns {
+        flex-direction: row;
+        gap: 20px;
+    }
+
+    .help-section h3 {
+        font-size: 12px;
+        margin-bottom: 6px;
+        margin-top: 10px;
+    }
+
+    .help-table td {
+        font-size: 11px;
+        padding: 2px 0;
+    }
+
+    .help-key {
+        font-size: 10px;
+        padding: 1px 6px;
+        min-width: 50px;
+    }
+
+    .help-list li {
+        font-size: 11px;
+        padding: 2px 0;
+    }
+
+    .help-touch-desc {
+        font-size: 11px;
+    }
+
+    .help-touch-badge {
+        min-width: 32px;
+        height: 32px;
+        font-size: 9px;
+    }
+
+    #help-dismiss {
+        margin-top: 10px;
+        margin-bottom: 8px;
+        font-size: 11px;
+    }
+
+    #help-close {
+        top: 8px;
+        right: 8px;
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+    }
 }
 
 /* ================================================================
