@@ -883,7 +883,7 @@ class Game {
         this.createGhosts3D();
         this.setupCameras();
         this.setupInput();
-        this.showOverlay('PAC-MAN', 'Press any key to start');
+        this.showOverlay('PAC-MAN', 'Tap or press any key to start');
         this.updateHUD();
         this.updateMuteLabel();
         this.loop();
@@ -896,7 +896,8 @@ class Game {
     initThreeJS() {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x050510);
-        this.scene.fog = new THREE.FogExp2(0x050510, 0.025);
+        this.scene.fog = new THREE.FogExp2(0x050510, 0.015);
+        this._baseFogDensity = 0.015;
 
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -1070,9 +1071,8 @@ class Game {
 
         const aspect = window.innerWidth / window.innerHeight;
         const frustum = 18;
-        this.topCamera = new THREE.PerspectiveCamera(60, aspect, 0.1, 100);
-        this.topCamera.position.set(0, 30, 10);
-        this.topCamera.lookAt(0, 0, 2);
+
+        this.topCamera = this._createTopDownCamera();
 
         this.thirdPersonCamera = new THREE.PerspectiveCamera(60, aspect, 0.1, 200);
         this.thirdPersonCamera.position.set(0, 15, 10);
@@ -1092,12 +1092,30 @@ class Game {
 
         this.cameraPos = new THREE.Vector3();
         this.cameraTarget = new THREE.Vector3();
+        this.topCamPos = new THREE.Vector3(0, 14, 10);
+        this.topCamTarget = new THREE.Vector3(0, 0, -2);
         this.fpvCameraPos = new THREE.Vector3();
         this.fpvCameraTarget = new THREE.Vector3();
         this.frontCameraPos = new THREE.Vector3();
         this.frontCameraTarget = new THREE.Vector3();
 
         this.updateCameraLabel();
+    }
+
+    _isPortrait() {
+        return window.innerWidth / window.innerHeight < 1;
+    }
+
+    _createTopDownCamera() {
+        const aspect = window.innerWidth / window.innerHeight;
+        const cam = new THREE.PerspectiveCamera(60, aspect, 0.1, 200);
+        if (this._isPortrait()) {
+            cam.position.set(0, 14, 10);
+        } else {
+            cam.position.set(0, 30, 10);
+            cam.lookAt(0, 0, 2);
+        }
+        return cam;
     }
 
     updateCameraAspect() {
@@ -1129,6 +1147,15 @@ class Game {
         const angle = dirToAngle(this.pacman.dir);
         const dirX = Math.cos(angle);
         const dirZ = -Math.sin(angle);
+
+        if (this._isPortrait()) {
+            const topIdeal = new THREE.Vector3(px, 14, pz + 10);
+            const topTarget = new THREE.Vector3(px, 0, pz - 2);
+            this.topCamPos.lerp(topIdeal, 0.05);
+            this.topCamTarget.lerp(topTarget, 0.06);
+            this.topCamera.position.copy(this.topCamPos);
+            this.topCamera.lookAt(this.topCamTarget);
+        }
 
         const idealPos = new THREE.Vector3(
             px - dirX * 6,
@@ -1213,6 +1240,119 @@ class Game {
                 e.preventDefault();
             }
         });
+
+        this.isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        if (this.isTouchDevice) {
+            this.setupTouchInput();
+        }
+    }
+
+    setupTouchInput() {
+        document.body.classList.add('has-touch');
+
+        document.addEventListener('touchmove', (e) => {
+            if (!this.helpVisible) e.preventDefault();
+        }, { passive: false });
+
+        this.overlay.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.audio.resume();
+            if (this.state === STATE.START || this.state === STATE.GAMEOVER) {
+                this.startGame();
+            }
+        }, { passive: false });
+
+        const dpadMap = {
+            'dpad-up':    DIR.UP,
+            'dpad-down':  DIR.DOWN,
+            'dpad-left':  DIR.LEFT,
+            'dpad-right': DIR.RIGHT
+        };
+
+        const setDirection = (dir) => {
+            if (this.helpVisible) return;
+            this.audio.resume();
+            let d = dir;
+            if (this.cameraMode >= 1) {
+                const facing = this.pacman.dir;
+                if (d === DIR.UP) d = facing;
+                else if (d === DIR.DOWN) d = oppositeDir(facing);
+                else if (d === DIR.LEFT) d = turnLeft(facing);
+                else if (d === DIR.RIGHT) d = turnRight(facing);
+            }
+            this.pacman.nextDir = d;
+        };
+
+        for (const [id, dir] of Object.entries(dpadMap)) {
+            const btn = document.getElementById(id);
+            if (!btn) continue;
+
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                btn.classList.add('active');
+                setDirection(dir);
+            }, { passive: false });
+
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                btn.classList.remove('active');
+            }, { passive: false });
+
+            btn.addEventListener('touchcancel', () => {
+                btn.classList.remove('active');
+            });
+        }
+
+        const camBtn = document.getElementById('touch-camera');
+        if (camBtn) {
+            camBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.audio.resume();
+                this.cycleCamera();
+            }, { passive: false });
+        }
+
+        const muteBtn = document.getElementById('touch-mute');
+        if (muteBtn) {
+            muteBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.audio.resume();
+                this.audio.toggleMute();
+                this.updateMuteLabel();
+                muteBtn.textContent = this.audio.muted ? '\u{1F507}' : '\u{1F509}';
+            }, { passive: false });
+        }
+
+        const helpBtn = document.getElementById('touch-help');
+        if (helpBtn) {
+            helpBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.audio.resume();
+                this.toggleHelp();
+            }, { passive: false });
+        }
+
+        const helpClose = document.getElementById('help-close');
+        if (helpClose) {
+            const closeHelp = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.helpVisible) this.toggleHelp();
+            };
+            helpClose.addEventListener('touchstart', closeHelp, { passive: false });
+            helpClose.addEventListener('click', closeHelp);
+        }
+
+        const helpContent = document.getElementById('help-content');
+        const dismissHelp = (e) => {
+            if (!this.helpVisible) return;
+            if (helpContent && helpContent.contains(e.target)) return;
+            if (e.target.id === 'help-close') return;
+            e.preventDefault();
+            this.toggleHelp();
+        };
+        this.helpOverlay.addEventListener('touchstart', dismissHelp, { passive: false });
+        this.helpOverlay.addEventListener('click', dismissHelp);
     }
 
     toggleHelp() {
@@ -1399,7 +1539,7 @@ class Game {
             if (this.stateTimer >= 90) {
                 if (this.lives <= 0) {
                     this.enterState(STATE.GAMEOVER);
-                    this.showOverlay('GAME OVER', 'Press any key to play again');
+                    this.showOverlay('GAME OVER', 'Tap or press any key to play again');
                 } else {
                     this.resetEntities();
                     this.enterState(STATE.READY);
@@ -1640,45 +1780,82 @@ class Game {
 
         this.renderer.clear();
 
-        this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-        this.renderer.setScissor(0, 0, window.innerWidth, window.innerHeight);
-        this.renderer.setScissorTest(false);
-        this.renderer.render(this.scene, this.activeCamera);
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const narrow = w < 600;
+        const portrait = this._isPortrait();
 
-        if (this.cameraMode === 0) {
-            const mw = Math.floor(window.innerWidth * 0.25);
-            const mh = Math.floor(mw * 9 / 16);
-            const mx = window.innerWidth - mw - 10;
-            const my = window.innerHeight - mh - 10;
-
-            this.renderer.setViewport(mx, my, mw, mh);
-            this.renderer.setScissor(mx, my, mw, mh);
-            this.renderer.setScissorTest(true);
-            this.renderer.render(this.scene, this.thirdPersonCamera);
-            this.renderer.setScissorTest(false);
-        } else if (this.cameraMode === 1) {
-            const mw = Math.floor(window.innerWidth * 0.25);
-            const mh = Math.floor(mw * 9 / 16);
-            const mx = window.innerWidth - mw - 10;
-            const my = window.innerHeight - mh - 10;
-
-            this.renderer.setViewport(mx, my, mw, mh);
-            this.renderer.setScissor(mx, my, mw, mh);
-            this.renderer.setScissorTest(true);
-            this.renderer.render(this.scene, this.topCamera);
-            this.renderer.setScissorTest(false);
+        if (this.scene.fog) {
+            const camDist = this.activeCamera.position.length();
+            this.scene.fog.density = this._baseFogDensity * (30 / Math.max(camDist, 30));
         }
 
-        const fw = Math.floor(window.innerWidth * 0.18);
-        const fh = Math.floor(fw * 9 / 16);
-        const fx = 10;
-        const fy = window.innerHeight - fh - 10;
+        if (portrait) {
+            const stripH = Math.floor(h * 0.15);
+            const mainH = h - stripH * 2;
 
-        this.renderer.setViewport(fx, fy, fw, fh);
-        this.renderer.setScissor(fx, fy, fw, fh);
-        this.renderer.setScissorTest(true);
-        this.renderer.render(this.scene, this.frontCamera);
-        this.renderer.setScissorTest(false);
+            this.renderer.setViewport(0, stripH, w, mainH);
+            this.renderer.setScissor(0, stripH, w, mainH);
+            this.renderer.setScissorTest(true);
+            this.renderer.render(this.scene, this.activeCamera);
+
+            const topCam = this.cameraMode === 0 ? this.frontCamera : this.topCamera;
+            this.renderer.setViewport(0, mainH + stripH, w, stripH);
+            this.renderer.setScissor(0, mainH + stripH, w, stripH);
+            this.renderer.render(this.scene, topCam);
+
+            const botCam = this.cameraMode === 0 ? this.minimapCamera : this.topCamera;
+            const savedFog = this.scene.fog;
+            if (this.cameraMode === 0) this.scene.fog = null;
+            this.renderer.setViewport(0, 0, w, stripH);
+            this.renderer.setScissor(0, 0, w, stripH);
+            this.renderer.render(this.scene, botCam);
+            this.renderer.setScissorTest(false);
+            this.scene.fog = savedFog;
+        } else {
+            this.renderer.setViewport(0, 0, w, h);
+            this.renderer.setScissor(0, 0, w, h);
+            this.renderer.setScissorTest(false);
+            this.renderer.render(this.scene, this.activeCamera);
+
+            const minimapFrac = narrow ? 0.22 : 0.25;
+            if (this.cameraMode === 0) {
+                const mw = Math.floor(w * minimapFrac);
+                const mh = Math.floor(mw * 9 / 16);
+                const mx = w - mw - 10;
+                const my = h - mh - 10;
+
+                this.renderer.setViewport(mx, my, mw, mh);
+                this.renderer.setScissor(mx, my, mw, mh);
+                this.renderer.setScissorTest(true);
+                this.renderer.render(this.scene, this.thirdPersonCamera);
+                this.renderer.setScissorTest(false);
+            } else if (this.cameraMode === 1) {
+                const mw = Math.floor(w * minimapFrac);
+                const mh = Math.floor(mw * 9 / 16);
+                const mx = w - mw - 10;
+                const my = h - mh - 10;
+
+                this.renderer.setViewport(mx, my, mw, mh);
+                this.renderer.setScissor(mx, my, mw, mh);
+                this.renderer.setScissorTest(true);
+                this.renderer.render(this.scene, this.topCamera);
+                this.renderer.setScissorTest(false);
+            }
+
+            if (!narrow) {
+                const fw = Math.floor(w * 0.18);
+                const fh = Math.floor(fw * 9 / 16);
+                const fx = 10;
+                const fy = h - fh - 10;
+
+                this.renderer.setViewport(fx, fy, fw, fh);
+                this.renderer.setScissor(fx, fy, fw, fh);
+                this.renderer.setScissorTest(true);
+                this.renderer.render(this.scene, this.frontCamera);
+                this.renderer.setScissorTest(false);
+            }
+        }
     }
 
     // --------------------------------------------------------

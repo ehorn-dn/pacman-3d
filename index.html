@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PAC-MAN 3D</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -26,51 +26,70 @@
         <div id="camera-label"></div>
         <div id="mute-label">[M] SOUND: ON</div>
         <div id="help-hint">[H] HELP</div>
-        <div id="ready-text" class="hidden">READY!</div>
-        <div id="help-overlay" class="hidden">
-            <div id="help-content">
-                <h2 id="help-title">HOW TO PLAY</h2>
-                <div id="help-columns">
-                    <div class="help-section">
-                        <h3>CONTROLS</h3>
-                        <table class="help-table">
-                            <tr><td class="help-key">W / &uarr;</td><td>Move Up</td></tr>
-                            <tr><td class="help-key">S / &darr;</td><td>Move Down</td></tr>
-                            <tr><td class="help-key">A / &larr;</td><td>Move Left</td></tr>
-                            <tr><td class="help-key">D / &rarr;</td><td>Move Right</td></tr>
-                            <tr><td class="help-key">C</td><td>Cycle Camera</td></tr>
-                            <tr><td class="help-key">M</td><td>Toggle Sound</td></tr>
-                            <tr><td class="help-key">H</td><td>Toggle Help</td></tr>
-                        </table>
-                        <p class="help-note">In third-person view, controls are relative to Pac-Man's facing direction.</p>
-                    </div>
-                    <div class="help-section">
-                        <h3>RULES</h3>
-                        <ul class="help-list">
-                            <li><span class="help-dot dot-small"></span> Eat all dots to complete a level</li>
-                            <li><span class="help-dot dot-power"></span> Power pellets let you eat ghosts</li>
-                            <li>Avoid ghosts &mdash; contact costs a life</li>
-                            <li>You start with 3 lives</li>
-                        </ul>
-                        <h3>SCORING</h3>
-                        <ul class="help-list">
-                            <li>Dot: <span class="help-pts">10</span> pts</li>
-                            <li>Power Pellet: <span class="help-pts">50</span> pts</li>
-                            <li>1st Ghost: <span class="help-pts">200</span> pts</li>
-                            <li>2nd Ghost: <span class="help-pts">400</span> pts</li>
-                            <li>3rd Ghost: <span class="help-pts">800</span> pts</li>
-                            <li>4th Ghost: <span class="help-pts">1600</span> pts</li>
-                        </ul>
-                    </div>
+        <div id="touch-controls" class="touch-only">
+            <div id="dpad">
+                <button class="dpad-btn" id="dpad-up" aria-label="Up">&#9650;</button>
+                <div class="dpad-mid">
+                    <button class="dpad-btn" id="dpad-left" aria-label="Left">&#9664;</button>
+                    <div class="dpad-center"></div>
+                    <button class="dpad-btn" id="dpad-right" aria-label="Right">&#9654;</button>
                 </div>
-                <p id="help-dismiss">Press <span class="help-key-inline">H</span> or <span class="help-key-inline">ESC</span> to close</p>
+                <button class="dpad-btn" id="dpad-down" aria-label="Down">&#9660;</button>
             </div>
         </div>
+        <div id="touch-actions" class="touch-only">
+            <button class="touch-btn" id="touch-camera" aria-label="Cycle Camera">CAM</button>
+        </div>
+        <div id="touch-top-actions" class="touch-only">
+            <button class="touch-btn-sm" id="touch-mute" aria-label="Toggle Sound">&#128264;</button>
+            <button class="touch-btn-sm" id="touch-help" aria-label="Help">?</button>
+        </div>
+        <div id="ready-text" class="hidden">READY!</div>
         <div id="overlay">
             <div id="overlay-content">
                 <h1 id="game-title">PAC-MAN</h1>
-                <p id="overlay-message">Press any key to start</p>
+                <p id="overlay-message">Tap or press any key to start</p>
             </div>
+        </div>
+    </div>
+    <div id="help-overlay" class="hidden">
+        <button id="help-close" aria-label="Close Help">&times;</button>
+        <div id="help-content">
+            <h2 id="help-title">HOW TO PLAY</h2>
+            <div id="help-columns">
+                <div class="help-section">
+                    <h3>CONTROLS</h3>
+                    <table class="help-table">
+                        <tr><td class="help-key">W / &uarr;</td><td>Move Up</td></tr>
+                        <tr><td class="help-key">S / &darr;</td><td>Move Down</td></tr>
+                        <tr><td class="help-key">A / &larr;</td><td>Move Left</td></tr>
+                        <tr><td class="help-key">D / &rarr;</td><td>Move Right</td></tr>
+                        <tr><td class="help-key">C</td><td>Cycle Camera</td></tr>
+                        <tr><td class="help-key">M</td><td>Toggle Sound</td></tr>
+                        <tr><td class="help-key">H</td><td>Toggle Help</td></tr>
+                    </table>
+                    <p class="help-note">In third-person view, controls are relative to Pac-Man's facing direction.</p>
+                </div>
+                <div class="help-section">
+                    <h3>RULES</h3>
+                    <ul class="help-list">
+                        <li><span class="help-dot dot-small"></span> Eat all dots to complete a level</li>
+                        <li><span class="help-dot dot-power"></span> Power pellets let you eat ghosts</li>
+                        <li>Avoid ghosts &mdash; contact costs a life</li>
+                        <li>You start with 3 lives</li>
+                    </ul>
+                    <h3>SCORING</h3>
+                    <ul class="help-list">
+                        <li>Dot: <span class="help-pts">10</span> pts</li>
+                        <li>Power Pellet: <span class="help-pts">50</span> pts</li>
+                        <li>1st Ghost: <span class="help-pts">200</span> pts</li>
+                        <li>2nd Ghost: <span class="help-pts">400</span> pts</li>
+                        <li>3rd Ghost: <span class="help-pts">800</span> pts</li>
+                        <li>4th Ghost: <span class="help-pts">1600</span> pts</li>
+                    </ul>
+                </div>
+            </div>
+            <p id="help-dismiss">Press <span class="help-key-inline">H</span> or <span class="help-key-inline">ESC</span> to close <span class="touch-only-inline">(or tap <span class="help-key-inline">?</span>)</span></p>
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>

@@ -11,6 +11,9 @@ body {
     overflow: hidden;
     width: 100vw;
     height: 100vh;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
 }
 
 body > canvas {
@@ -18,6 +21,7 @@ body > canvas {
     position: fixed;
     top: 0;
     left: 0;
+    touch-action: none;
 }
 
 #game-container {
@@ -184,6 +188,7 @@ body > canvas {
     transition: opacity 0.25s;
     pointer-events: auto;
     backdrop-filter: blur(4px);
+    touch-action: manipulation;
 }
 
 #help-overlay.hidden {
@@ -191,10 +196,40 @@ body > canvas {
     pointer-events: none;
 }
 
+#help-close {
+    display: none;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 24px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 21;
+    touch-action: manipulation;
+    pointer-events: auto;
+}
+
+#help-close:active {
+    background: rgba(255, 255, 0, 0.25);
+    border-color: rgba(255, 255, 0, 0.5);
+}
+
+body.has-touch #help-close {
+    display: flex;
+}
+
 #help-content {
     max-width: 640px;
     width: 90vw;
     text-align: center;
+    touch-action: auto;
 }
 
 #help-title {
@@ -317,6 +352,238 @@ body > canvas {
     border-radius: 3px;
     padding: 1px 6px;
     font-size: 12px;
+}
+
+/* Touch controls -- hidden by default, shown via JS on touch devices */
+
+.touch-only,
+.touch-only-inline {
+    display: none;
+}
+
+body.has-touch .touch-only {
+    display: flex;
+}
+
+body.has-touch .touch-only-inline {
+    display: inline;
+}
+
+#touch-controls {
+    position: fixed;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    left: 12px;
+    z-index: 5;
+    pointer-events: auto;
+}
+
+#dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.dpad-mid {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.dpad-btn {
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+}
+
+.dpad-btn:active,
+.dpad-btn.active {
+    background: rgba(255, 255, 0, 0.25);
+    border-color: rgba(255, 255, 0, 0.5);
+    color: #ffff00;
+}
+
+.dpad-center {
+    width: 20px;
+    height: 48px;
+}
+
+#touch-actions {
+    position: fixed;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    right: 12px;
+    z-index: 5;
+    pointer-events: auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.touch-btn {
+    width: 52px;
+    height: 52px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+}
+
+.touch-btn:active,
+.touch-btn.active {
+    background: rgba(255, 255, 0, 0.25);
+    border-color: rgba(255, 255, 0, 0.5);
+    color: #ffff00;
+}
+
+#touch-top-actions {
+    position: fixed;
+    top: 60px;
+    right: 12px;
+    z-index: 5;
+    pointer-events: auto;
+    flex-direction: row;
+    gap: 8px;
+}
+
+.touch-btn-sm {
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+}
+
+.touch-btn-sm:active {
+    background: rgba(255, 255, 0, 0.25);
+    border-color: rgba(255, 255, 0, 0.5);
+}
+
+/* Portrait mode -- secondary views above/below main */
+@media (orientation: portrait) {
+    #hud {
+        top: calc(15vh + 6px);
+    }
+    #touch-controls {
+        bottom: calc(15vh + 8px + env(safe-area-inset-bottom, 0px));
+    }
+    #touch-actions {
+        bottom: calc(15vh + 8px + env(safe-area-inset-bottom, 0px));
+    }
+    #touch-top-actions {
+        top: calc(15vh + 50px);
+    }
+}
+
+/* Responsive -- small screens */
+
+@media (max-width: 768px) {
+    #game-title {
+        font-size: 36px;
+        letter-spacing: 4px;
+        margin-bottom: 20px;
+    }
+
+    #overlay-message {
+        font-size: 14px;
+        letter-spacing: 2px;
+    }
+
+    #hud {
+        width: auto;
+        max-width: 95vw;
+        padding: 6px 10px;
+        top: 6px;
+    }
+
+    .hud-label {
+        font-size: 9px;
+        letter-spacing: 1px;
+    }
+
+    #score, #high-score, #level {
+        font-size: 16px;
+        min-width: 40px;
+    }
+
+    #lives-display {
+        bottom: auto;
+        top: 50px;
+        left: 8px;
+        height: 20px;
+    }
+
+    #camera-label,
+    #mute-label,
+    #help-hint {
+        display: none;
+    }
+
+    #help-title {
+        font-size: 22px;
+        margin-bottom: 16px;
+    }
+
+    #help-columns {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    #help-content {
+        max-height: 80vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 0 8px;
+    }
+
+    #help-dismiss {
+        margin-top: 16px;
+        margin-bottom: 12px;
+    }
+
+    .help-table td {
+        font-size: 12px;
+    }
+
+    .help-list li {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+    #hud {
+        top: calc(15vh + 6px);
+    }
+    #lives-display {
+        top: calc(15vh + 50px);
+    }
 }
 
 @keyframes blink {
