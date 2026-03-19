@@ -543,7 +543,45 @@ body.has-touch .touch-only-inline {
 }
 
 /* ----------------------------------------------------------------
-   ACTION BUTTONS — bottom-right (camera cycle button)
+   SWIPE MODE — hides D-pad when swipe controls are active
+   ---------------------------------------------------------------- */
+body.swipe-mode #touch-controls {
+    display: none !important;
+}
+
+/* Swipe direction indicator — brief arrow shown at swipe origin */
+#swipe-indicator {
+    position: fixed;
+    z-index: 4;
+    width: 56px;
+    height: 56px;
+    pointer-events: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 0, 0.2);
+    border: 2px solid rgba(255, 255, 0, 0.6);
+    color: #ffff00;
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+    transition: none;
+}
+
+#swipe-indicator.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    animation: swipe-fade 0.4s ease-out forwards;
+}
+
+@keyframes swipe-fade {
+    0%   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.3); }
+}
+
+/* ----------------------------------------------------------------
+   ACTION BUTTONS — bottom-right (camera cycle + control mode)
    ---------------------------------------------------------------- */
 #touch-actions {
     position: fixed;

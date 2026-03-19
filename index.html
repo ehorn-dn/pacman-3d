@@ -66,8 +66,12 @@
             </div>
         </div>
 
-        <!-- Camera cycle button — bottom-right on touch devices -->
+        <!-- Swipe direction indicator — shown briefly on swipe to confirm direction -->
+        <div id="swipe-indicator" class="touch-only hidden"></div>
+
+        <!-- Camera cycle + control mode buttons — bottom-right on touch devices -->
         <div id="touch-actions" class="touch-only">
+            <button class="touch-btn" id="touch-control-mode" aria-label="Toggle Control Mode">DPAD</button>
             <button class="touch-btn" id="touch-camera" aria-label="Cycle Camera">CAM</button>
         </div>
 

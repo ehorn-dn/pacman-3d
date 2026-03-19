@@ -2237,6 +2237,12 @@ class Game {
     setupTouchInput() {
         document.body.classList.add('has-touch');
 
+        // --- Control mode: 'dpad' or 'swipe', persisted in localStorage ---
+        this.touchControlMode = localStorage.getItem('pacman-control-mode') || 'dpad';
+        if (this.touchControlMode === 'swipe') {
+            document.body.classList.add('swipe-mode');
+        }
+
         // Prevent scrolling on touch move (except in help overlay for scrollable content)
         document.addEventListener('touchmove', (e) => {
             if (!this.helpVisible) e.preventDefault();
@@ -2284,7 +2290,7 @@ class Game {
 
             btn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                btn.classList.add('active');  // Visual feedback
+                btn.classList.add('active');
                 setDirection(dir);
             }, { passive: false });
 
@@ -2296,6 +2302,84 @@ class Game {
             btn.addEventListener('touchcancel', () => {
                 btn.classList.remove('active');
             });
+        }
+
+        // --- Swipe gesture detection on the canvas ---
+        const SWIPE_THRESHOLD = 30;
+        const swipeIndicator = document.getElementById('swipe-indicator');
+        const swipeArrows = { UP: '\u25B2', DOWN: '\u25BC', LEFT: '\u25C0', RIGHT: '\u25B6' };
+        let swipeStartX = 0;
+        let swipeStartY = 0;
+        let swipeTracking = false;
+
+        const showSwipeIndicator = (x, y, dir) => {
+            if (!swipeIndicator) return;
+            const label = Object.entries(DIR).find(([, v]) => v === dir);
+            swipeIndicator.textContent = label ? swipeArrows[label[0]] || '' : '';
+            swipeIndicator.style.left = x + 'px';
+            swipeIndicator.style.top = y + 'px';
+            swipeIndicator.classList.remove('hidden', 'show');
+            void swipeIndicator.offsetWidth;
+            swipeIndicator.classList.add('show');
+            clearTimeout(this._swipeIndicatorTimer);
+            this._swipeIndicatorTimer = setTimeout(() => {
+                swipeIndicator.classList.add('hidden');
+                swipeIndicator.classList.remove('show');
+            }, 400);
+        };
+
+        this.renderer.domElement.addEventListener('touchstart', (e) => {
+            if (this.touchControlMode !== 'swipe') return;
+            const touch = e.touches[0];
+            swipeStartX = touch.clientX;
+            swipeStartY = touch.clientY;
+            swipeTracking = true;
+        }, { passive: true });
+
+        this.renderer.domElement.addEventListener('touchend', (e) => {
+            if (this.touchControlMode !== 'swipe' || !swipeTracking) return;
+            swipeTracking = false;
+            const touch = e.changedTouches[0];
+            const dx = touch.clientX - swipeStartX;
+            const dy = touch.clientY - swipeStartY;
+            const absDx = Math.abs(dx);
+            const absDy = Math.abs(dy);
+
+            if (Math.max(absDx, absDy) < SWIPE_THRESHOLD) return;
+
+            let dir;
+            if (absDx > absDy) {
+                dir = dx > 0 ? DIR.RIGHT : DIR.LEFT;
+            } else {
+                dir = dy > 0 ? DIR.DOWN : DIR.UP;
+            }
+            setDirection(dir);
+            showSwipeIndicator(swipeStartX, swipeStartY, dir);
+        }, { passive: true });
+
+        this.renderer.domElement.addEventListener('touchcancel', () => {
+            swipeTracking = false;
+        });
+
+        // --- Control mode toggle button (DPAD / SWIPE) ---
+        const controlModeBtn = document.getElementById('touch-control-mode');
+        if (controlModeBtn) {
+            controlModeBtn.textContent = this.touchControlMode === 'swipe' ? 'SWIPE' : 'DPAD';
+
+            controlModeBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.audio.resume();
+                if (this.touchControlMode === 'dpad') {
+                    this.touchControlMode = 'swipe';
+                    document.body.classList.add('swipe-mode');
+                    controlModeBtn.textContent = 'SWIPE';
+                } else {
+                    this.touchControlMode = 'dpad';
+                    document.body.classList.remove('swipe-mode');
+                    controlModeBtn.textContent = 'DPAD';
+                }
+                localStorage.setItem('pacman-control-mode', this.touchControlMode);
+            }, { passive: false });
         }
 
         // --- Camera cycle button ---
