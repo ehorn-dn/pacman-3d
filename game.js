@@ -2175,6 +2175,12 @@ class Game {
                 return;
             }
 
+            // --- New game ---
+            if (e.key === 'n' || e.key === 'N') {
+                this.startGame();
+                return;
+            }
+
             // --- Reset: show confirmation prompt ---
             if (e.key === 'r' || e.key === 'R') {
                 this.showResetConfirm();
@@ -2451,6 +2457,16 @@ class Game {
                 e.preventDefault();
                 this.audio.resume();
                 this.showResetConfirm();
+            }, { passive: false });
+        }
+
+        // --- New game button ---
+        const newGameBtn = document.getElementById('touch-new-game');
+        if (newGameBtn) {
+            newGameBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.audio.resume();
+                this.startGame();
             }, { passive: false });
         }
 
