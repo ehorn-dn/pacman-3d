@@ -2328,15 +2328,24 @@ class Game {
             }, 400);
         };
 
-        this.renderer.domElement.addEventListener('touchstart', (e) => {
+        const isSwipeTarget = (e) => {
+            const t = e.target;
+            if (t === this.renderer.domElement) return true;
+            if (t === document.getElementById('game-container')) return true;
+            if (t === document.body || t === document.documentElement) return true;
+            return false;
+        };
+
+        document.addEventListener('touchstart', (e) => {
             if (this.touchControlMode !== 'swipe') return;
+            if (!isSwipeTarget(e)) return;
             const touch = e.touches[0];
             swipeStartX = touch.clientX;
             swipeStartY = touch.clientY;
             swipeTracking = true;
         }, { passive: true });
 
-        this.renderer.domElement.addEventListener('touchend', (e) => {
+        document.addEventListener('touchend', (e) => {
             if (this.touchControlMode !== 'swipe' || !swipeTracking) return;
             swipeTracking = false;
             const touch = e.changedTouches[0];
@@ -2357,7 +2366,7 @@ class Game {
             showSwipeIndicator(swipeStartX, swipeStartY, dir);
         }, { passive: true });
 
-        this.renderer.domElement.addEventListener('touchcancel', () => {
+        document.addEventListener('touchcancel', () => {
             swipeTracking = false;
         });
 
@@ -2366,7 +2375,7 @@ class Game {
         if (controlModeBtn) {
             controlModeBtn.textContent = this.touchControlMode === 'swipe' ? 'SWIPE' : 'DPAD';
 
-            controlModeBtn.addEventListener('touchstart', (e) => {
+            const toggleControlMode = (e) => {
                 e.preventDefault();
                 this.audio.resume();
                 if (this.touchControlMode === 'dpad') {
@@ -2379,7 +2388,9 @@ class Game {
                     controlModeBtn.textContent = 'DPAD';
                 }
                 localStorage.setItem('pacman-control-mode', this.touchControlMode);
-            }, { passive: false });
+            };
+            controlModeBtn.addEventListener('touchstart', toggleControlMode, { passive: false });
+            controlModeBtn.addEventListener('click', toggleControlMode);
         }
 
         // --- Camera cycle button ---
