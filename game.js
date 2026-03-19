@@ -1140,6 +1140,8 @@ class Game {
         cam.updateProjectionMatrix();
         cam.position.set(0, camY, 8);
         cam.lookAt(0, 0, 0);
+
+        document.title = 'P:y=' + camY.toFixed(0) + ' a=' + viewAspect.toFixed(2);
     }
 
     updateCameraAspect() {
