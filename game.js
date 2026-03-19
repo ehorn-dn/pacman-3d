@@ -1835,11 +1835,14 @@ class Game {
                 const mx = w - mw - 10;
                 const my = h - mh - 10;
 
+                const savedFog = this.scene.fog;
+                this.scene.fog = null;
                 this.renderer.setViewport(mx, my, mw, mh);
                 this.renderer.setScissor(mx, my, mw, mh);
                 this.renderer.setScissorTest(true);
-                this.renderer.render(this.scene, this.topCamera);
+                this.renderer.render(this.scene, this.minimapCamera);
                 this.renderer.setScissorTest(false);
+                this.scene.fog = savedFog;
             }
 
             if (!narrow) {
