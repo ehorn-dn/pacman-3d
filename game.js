@@ -1830,12 +1830,16 @@ class Game {
             this.renderer.setScissor(0, mainH, halfW, stripH);
             this.renderer.render(this.scene, this.frontCamera);
 
-            this.scene.fog = null;
+            const stripCam = this.cameraMode === 0
+                ? this.thirdPersonCamera
+                : this.minimapCamera;
+            const stripNeedsFogOff = stripCam === this.minimapCamera;
+            if (stripNeedsFogOff) this.scene.fog = null;
             this.renderer.setViewport(halfW, mainH, w - halfW, stripH);
             this.renderer.setScissor(halfW, mainH, w - halfW, stripH);
-            this.renderer.render(this.scene, this.minimapCamera);
+            this.renderer.render(this.scene, stripCam);
             this.renderer.setScissorTest(false);
-            this.scene.fog = savedFog;
+            if (stripNeedsFogOff) this.scene.fog = savedFog;
         } else {
             if (this.scene.fog) {
                 const camDist = this.activeCamera.position.length();
