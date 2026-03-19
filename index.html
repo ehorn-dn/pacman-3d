@@ -2,15 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- Prevent zooming/scaling on mobile devices for a full-screen game experience -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PAC-MAN 3D</title>
+    <!-- Cache-busting query param ensures fresh CSS after updates -->
     <link rel="stylesheet" href="styles.css?v=10">
+    <!-- Aggressive cache-busting headers to prevent stale assets during development -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
 </head>
 <body>
+    <!--
+        #game-container is a fixed overlay that sits on top of the Three.js <canvas>.
+        It holds all HUD elements, overlays, and touch controls.
+        pointer-events: none is set on the container so clicks pass through to the canvas,
+        while individual interactive children re-enable pointer-events as needed.
+    -->
     <div id="game-container">
+
+        <!--
+            HUD (Heads-Up Display) — top-center bar showing score, high score, and level.
+            Uses a three-column flex layout: left (score), center (high score), right (level).
+        -->
         <div id="hud">
             <div id="hud-left">
                 <span class="hud-label">SCORE</span>
@@ -25,10 +39,20 @@
                 <span id="level">1</span>
             </div>
         </div>
+
+        <!-- Lives indicator — small Pac-Man icons drawn via JS onto mini <canvas> elements -->
         <div id="lives-display"></div>
+
+        <!-- Keyboard shortcut labels (hidden on mobile via CSS) -->
         <div id="camera-label"></div>
         <div id="mute-label">[M] SOUND: ON</div>
         <div id="help-hint">[H] HELP</div>
+
+        <!--
+            Touch D-Pad — only visible on touch devices (class "touch-only" is hidden by default,
+            shown when JS adds "has-touch" class to <body>).
+            The D-pad uses a 3-row layout: up button, middle row (left + spacer + right), down button.
+        -->
         <div id="touch-controls" class="touch-only">
             <div id="dpad">
                 <button class="dpad-btn" id="dpad-up" aria-label="Up">&#9650;</button>
@@ -40,14 +64,26 @@
                 <button class="dpad-btn" id="dpad-down" aria-label="Down">&#9660;</button>
             </div>
         </div>
+
+        <!-- Camera cycle button — bottom-right on touch devices -->
         <div id="touch-actions" class="touch-only">
             <button class="touch-btn" id="touch-camera" aria-label="Cycle Camera">CAM</button>
         </div>
+
+        <!-- Mute + Help buttons — top-right on touch devices -->
         <div id="touch-top-actions" class="touch-only">
             <button class="touch-btn-sm" id="touch-mute" aria-label="Toggle Sound">&#128264;</button>
             <button class="touch-btn-sm" id="touch-help" aria-label="Help">?</button>
         </div>
+
+        <!-- "READY!" text shown briefly before each round starts (toggled via .hidden class) -->
         <div id="ready-text" class="hidden">READY!</div>
+
+        <!--
+            Full-screen overlay used for the title screen and game-over screen.
+            Shown by default; hidden by adding .hidden class which fades opacity to 0
+            and disables pointer-events so the game beneath becomes interactive.
+        -->
         <div id="overlay">
             <div id="overlay-content">
                 <h1 id="game-title">PAC-MAN</h1>
@@ -55,10 +91,18 @@
             </div>
         </div>
     </div>
+
+    <!--
+        Help overlay — a separate full-screen modal showing controls, rules, and scoring.
+        Hidden by default. Toggled via [H] key or the touch "?" button.
+        Uses backdrop-filter: blur for a frosted-glass effect over the game.
+    -->
     <div id="help-overlay" class="hidden">
+        <!-- Close button — only visible on touch devices (shown via body.has-touch CSS rule) -->
         <button id="help-close" aria-label="Close Help">&times;</button>
         <div id="help-content">
             <h2 id="help-title">HOW TO PLAY</h2>
+            <!-- Two-column layout: left column = controls, right column = rules & scoring -->
             <div id="help-columns">
                 <div class="help-section">
                     <h3>CONTROLS</h3>
@@ -85,6 +129,7 @@
                     <ul class="help-list">
                         <li>Dot: <span class="help-pts">10</span> pts</li>
                         <li>Power Pellet: <span class="help-pts">50</span> pts</li>
+                        <!-- Ghost combo scoring doubles with each consecutive ghost eaten -->
                         <li>1st Ghost: <span class="help-pts">200</span> pts</li>
                         <li>2nd Ghost: <span class="help-pts">400</span> pts</li>
                         <li>3rd Ghost: <span class="help-pts">800</span> pts</li>
@@ -95,7 +140,10 @@
             <p id="help-dismiss">Press <span class="help-key-inline">H</span> or <span class="help-key-inline">ESC</span> to close <span class="touch-only-inline">(or tap <span class="help-key-inline">?</span>)</span></p>
         </div>
     </div>
+
+    <!-- Three.js r128 — provides WebGL 3D rendering (scene, camera, meshes, lights, etc.) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Main game logic — initializes the Game class on DOMContentLoaded -->
     <script src="game.js?v=12"></script>
 </body>
 </html>

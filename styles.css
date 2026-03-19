@@ -1,9 +1,35 @@
+/* ================================================================
+   PAC-MAN 3D — Stylesheet
+   ================================================================
+   Layout hierarchy:
+     <body>
+       └─ <canvas>           (Three.js WebGL canvas, fixed behind everything)
+       └─ #game-container    (fixed overlay, pointer-events: none)
+            ├─ #hud           (score / high-score / level bar)
+            ├─ #lives-display (bottom-left life icons)
+            ├─ #camera-label, #mute-label, #help-hint  (keyboard hints)
+            ├─ #touch-controls, #touch-actions, #touch-top-actions (mobile)
+            ├─ #ready-text    ("READY!" between rounds)
+            └─ #overlay       (title / game-over full-screen overlay)
+       └─ #help-overlay       (how-to-play modal)
+   ================================================================ */
+
+/* ----------------------------------------------------------------
+   RESET — normalize all elements to border-box sizing with no
+   default margin/padding so layout math is predictable.
+   ---------------------------------------------------------------- */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* ----------------------------------------------------------------
+   BODY — full-viewport black background for the game.
+   overflow: hidden prevents any scrollbars.
+   user-select: none prevents accidental text selection during play.
+   -webkit-touch-callout: none suppresses the iOS long-press menu.
+   ---------------------------------------------------------------- */
 body {
     background: #000;
     color: #fff;
@@ -16,6 +42,12 @@ body {
     -webkit-touch-callout: none;
 }
 
+/* ----------------------------------------------------------------
+   THREE.JS CANVAS — the WebGL <canvas> element is prepended to
+   <body> by game.js. It sits behind all UI via position: fixed.
+   touch-action: none prevents the browser from intercepting
+   touch gestures (pan, pinch-zoom) on the canvas.
+   ---------------------------------------------------------------- */
 body > canvas {
     display: block;
     position: fixed;
@@ -24,6 +56,11 @@ body > canvas {
     touch-action: none;
 }
 
+/* ----------------------------------------------------------------
+   GAME CONTAINER — a fixed full-screen div that holds all HUD
+   and overlay elements. pointer-events: none lets clicks pass
+   through to the canvas; interactive children re-enable it.
+   ---------------------------------------------------------------- */
 #game-container {
     position: fixed;
     top: 0;
@@ -34,6 +71,14 @@ body > canvas {
     z-index: 1;
 }
 
+/* ================================================================
+   HUD (Heads-Up Display)
+   ================================================================
+   Horizontally centered bar near the top of the screen.
+   Semi-transparent dark background with a subtle blue border
+   matching the maze wall color. Three columns: score, high score,
+   level — each stacked vertically (label on top, value below).
+   ================================================================ */
 #hud {
     position: absolute;
     top: 12px;
@@ -51,18 +96,21 @@ body > canvas {
     z-index: 2;
 }
 
+/* Each HUD column is a vertical flex container (label + value) */
 #hud > div {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
+/* Small grey label text above each HUD value ("SCORE", "HIGH SCORE", "LEVEL") */
 .hud-label {
     font-size: 11px;
     color: #aaa;
     letter-spacing: 2px;
 }
 
+/* Large white numeric values in the HUD */
 #score, #high-score, #level {
     font-size: 22px;
     font-weight: bold;
@@ -71,6 +119,12 @@ body > canvas {
     text-align: center;
 }
 
+/* ================================================================
+   LIVES DISPLAY
+   ================================================================
+   Bottom-left row of small Pac-Man icons. Each icon is a tiny
+   <canvas> element drawn by game.js. Flex row with a small gap.
+   ================================================================ */
 #lives-display {
     position: absolute;
     bottom: 16px;
@@ -82,6 +136,14 @@ body > canvas {
     z-index: 2;
 }
 
+/* ================================================================
+   KEYBOARD HINT LABELS
+   ================================================================
+   Small translucent labels in the bottom-right corner showing
+   available keyboard shortcuts. Hidden on mobile via media query.
+   ================================================================ */
+
+/* "[C] TOP-DOWN" / "[C] THIRD PERSON" camera mode label */
 #camera-label {
     position: absolute;
     bottom: 16px;
@@ -92,6 +154,7 @@ body > canvas {
     z-index: 2;
 }
 
+/* "[M] SOUND: ON/OFF" mute toggle label */
 #mute-label {
     position: absolute;
     bottom: 36px;
@@ -102,6 +165,13 @@ body > canvas {
     z-index: 2;
 }
 
+/* ================================================================
+   "READY!" TEXT
+   ================================================================
+   Large yellow text centered on screen, shown briefly before each
+   round. Uses a glowing text-shadow and a blink animation.
+   Hidden/shown by toggling the .hidden class.
+   ================================================================ */
 #ready-text {
     position: absolute;
     top: 50%;
@@ -120,6 +190,14 @@ body > canvas {
     display: none;
 }
 
+/* ================================================================
+   TITLE / GAME-OVER OVERLAY
+   ================================================================
+   Full-screen semi-transparent black overlay used for the start
+   screen ("PAC-MAN / Tap to start") and game-over screen.
+   Fades out via opacity transition when .hidden is added.
+   pointer-events: auto so the overlay captures clicks/taps.
+   ================================================================ */
 #overlay {
     position: fixed;
     top: 0;
@@ -144,6 +222,7 @@ body > canvas {
     text-align: center;
 }
 
+/* Large yellow glowing "PAC-MAN" title with double text-shadow */
 #game-title {
     font-size: 56px;
     color: #ffff00;
@@ -152,6 +231,7 @@ body > canvas {
     margin-bottom: 30px;
 }
 
+/* Blinking "Tap or press any key to start" prompt */
 #overlay-message {
     font-size: 18px;
     color: #aaa;
@@ -159,8 +239,9 @@ body > canvas {
     animation: blink 1.2s infinite;
 }
 
-/* Help hint */
-
+/* ================================================================
+   HELP HINT — "[H] HELP" label at bottom-center
+   ================================================================ */
 #help-hint {
     position: absolute;
     bottom: 16px;
@@ -172,8 +253,14 @@ body > canvas {
     z-index: 2;
 }
 
-/* Help overlay */
-
+/* ================================================================
+   HELP OVERLAY
+   ================================================================
+   Full-screen modal showing controls, rules, and scoring info.
+   Uses backdrop-filter: blur for a frosted-glass effect.
+   Higher z-index (20) than the game overlay (10) so it appears
+   on top of everything. Hidden/shown via .hidden class.
+   ================================================================ */
 #help-overlay {
     position: fixed;
     top: 0;
@@ -196,6 +283,7 @@ body > canvas {
     pointer-events: none;
 }
 
+/* Close button (×) — hidden by default, shown only on touch devices */
 #help-close {
     display: none;
     position: absolute;
@@ -216,15 +304,18 @@ body > canvas {
     pointer-events: auto;
 }
 
+/* Yellow highlight on press */
 #help-close:active {
     background: rgba(255, 255, 0, 0.25);
     border-color: rgba(255, 255, 0, 0.5);
 }
 
+/* Show close button only when touch device is detected */
 body.has-touch #help-close {
     display: flex;
 }
 
+/* Help content container — constrained width, centered text */
 #help-content {
     max-width: 640px;
     width: 90vw;
@@ -232,6 +323,7 @@ body.has-touch #help-close {
     touch-action: auto;
 }
 
+/* "HOW TO PLAY" heading with yellow glow matching the title style */
 #help-title {
     font-size: 32px;
     color: #ffff00;
@@ -240,6 +332,7 @@ body.has-touch #help-close {
     margin-bottom: 28px;
 }
 
+/* Two-column layout for controls (left) and rules/scoring (right) */
 #help-columns {
     display: flex;
     gap: 32px;
@@ -247,11 +340,13 @@ body.has-touch #help-close {
     text-align: left;
 }
 
+/* Each column takes equal space */
 .help-section {
     flex: 1;
     min-width: 0;
 }
 
+/* Section headings ("CONTROLS", "RULES", "SCORING") — cyan with underline */
 .help-section h3 {
     font-size: 14px;
     color: #00bfff;
@@ -266,6 +361,7 @@ body.has-touch #help-close {
     margin-top: 0;
 }
 
+/* Controls key-binding table */
 .help-table {
     width: 100%;
     border-collapse: collapse;
@@ -277,6 +373,7 @@ body.has-touch #help-close {
     color: #ccc;
 }
 
+/* Styled keyboard key indicators (e.g., "W / ↑") */
 .help-key {
     color: #fff;
     background: rgba(255, 255, 255, 0.1);
@@ -291,6 +388,7 @@ body.has-touch #help-close {
     margin-right: 8px;
 }
 
+/* Rules list — custom styled without default bullet points */
 .help-list {
     list-style: none;
     padding: 0;
@@ -305,12 +403,14 @@ body.has-touch #help-close {
     gap: 6px;
 }
 
+/* Colored dot indicators next to rule descriptions */
 .help-dot {
     display: inline-block;
     border-radius: 50%;
     flex-shrink: 0;
 }
 
+/* Small dot — represents regular dots in the maze */
 .dot-small {
     width: 6px;
     height: 6px;
@@ -318,6 +418,7 @@ body.has-touch #help-close {
     box-shadow: 0 0 4px #ffb8ae;
 }
 
+/* Large dot — represents power pellets */
 .dot-power {
     width: 12px;
     height: 12px;
@@ -325,11 +426,13 @@ body.has-touch #help-close {
     box-shadow: 0 0 8px #ffb8ae;
 }
 
+/* Yellow highlight for point values in the scoring list */
 .help-pts {
     color: #ffff00;
     font-weight: bold;
 }
 
+/* Italic note about third-person camera controls */
 .help-note {
     font-size: 11px;
     color: #888;
@@ -338,6 +441,7 @@ body.has-touch #help-close {
     line-height: 1.4;
 }
 
+/* Dismiss instruction at the bottom of the help overlay */
 #help-dismiss {
     margin-top: 28px;
     font-size: 13px;
@@ -345,6 +449,7 @@ body.has-touch #help-close {
     letter-spacing: 1px;
 }
 
+/* Inline keyboard key style used within the dismiss text */
 .help-key-inline {
     color: #fff;
     background: rgba(255, 255, 255, 0.1);
@@ -354,13 +459,21 @@ body.has-touch #help-close {
     font-size: 12px;
 }
 
-/* Touch controls -- hidden by default, shown via JS on touch devices */
+/* ================================================================
+   TOUCH CONTROLS
+   ================================================================
+   Hidden by default (display: none). When game.js detects a touch
+   device, it adds "has-touch" class to <body>, which triggers
+   display: flex on .touch-only elements.
+   ================================================================ */
 
+/* Hide all touch-only elements on non-touch devices */
 .touch-only,
 .touch-only-inline {
     display: none;
 }
 
+/* Show touch elements when touch device is detected */
 body.has-touch .touch-only {
     display: flex;
 }
@@ -369,6 +482,12 @@ body.has-touch .touch-only-inline {
     display: inline;
 }
 
+/* ----------------------------------------------------------------
+   D-PAD (Directional Pad) — bottom-left of screen
+   ----------------------------------------------------------------
+   Fixed position with safe-area-inset for devices with notches
+   or home indicators (e.g., iPhone X+).
+   ---------------------------------------------------------------- */
 #touch-controls {
     position: fixed;
     bottom: calc(12px + env(safe-area-inset-bottom, 0px));
@@ -377,6 +496,7 @@ body.has-touch .touch-only-inline {
     pointer-events: auto;
 }
 
+/* D-pad layout: vertical column of up, middle-row, down */
 #dpad {
     display: flex;
     flex-direction: column;
@@ -384,12 +504,14 @@ body.has-touch .touch-only-inline {
     gap: 2px;
 }
 
+/* Middle row: left button, spacer, right button */
 .dpad-mid {
     display: flex;
     align-items: center;
     gap: 2px;
 }
 
+/* Individual D-pad directional buttons */
 .dpad-btn {
     width: 48px;
     height: 48px;
@@ -406,6 +528,7 @@ body.has-touch .touch-only-inline {
     touch-action: none;
 }
 
+/* Active/pressed state — yellow highlight matching Pac-Man's color */
 .dpad-btn:active,
 .dpad-btn.active {
     background: rgba(255, 255, 0, 0.25);
@@ -413,11 +536,15 @@ body.has-touch .touch-only-inline {
     color: #ffff00;
 }
 
+/* Spacer between left and right D-pad buttons */
 .dpad-center {
     width: 20px;
     height: 48px;
 }
 
+/* ----------------------------------------------------------------
+   ACTION BUTTONS — bottom-right (camera cycle button)
+   ---------------------------------------------------------------- */
 #touch-actions {
     position: fixed;
     bottom: calc(12px + env(safe-area-inset-bottom, 0px));
@@ -429,6 +556,7 @@ body.has-touch .touch-only-inline {
     gap: 12px;
 }
 
+/* Circular action button (e.g., "CAM") */
 .touch-btn {
     width: 52px;
     height: 52px;
@@ -455,6 +583,11 @@ body.has-touch .touch-only-inline {
     color: #ffff00;
 }
 
+/* ----------------------------------------------------------------
+   TOP ACTION BUTTONS — top-right (mute + help)
+   ----------------------------------------------------------------
+   Positioned below the HUD bar. Smaller circular buttons.
+   ---------------------------------------------------------------- */
 #touch-top-actions {
     position: fixed;
     top: 60px;
@@ -465,6 +598,7 @@ body.has-touch .touch-only-inline {
     gap: 8px;
 }
 
+/* Smaller circular buttons for mute and help */
 .touch-btn-sm {
     width: 40px;
     height: 40px;
@@ -486,7 +620,13 @@ body.has-touch .touch-only-inline {
     border-color: rgba(255, 255, 0, 0.5);
 }
 
-/* Portrait mode -- secondary views side-by-side at top */
+/* ================================================================
+   RESPONSIVE — PORTRAIT ORIENTATION
+   ================================================================
+   In portrait mode, the top 15% of the viewport is reserved for
+   secondary camera views (first-person + minimap/third-person).
+   The HUD and touch top-actions are pushed down below that strip.
+   ================================================================ */
 @media (orientation: portrait) {
     #hud {
         top: calc(15vh + 6px);
@@ -496,8 +636,14 @@ body.has-touch .touch-only-inline {
     }
 }
 
-/* Responsive -- small screens */
-
+/* ================================================================
+   RESPONSIVE — SMALL SCREENS (≤768px)
+   ================================================================
+   Scales down font sizes, repositions the lives display to the
+   top, and hides keyboard-only labels (camera, mute, help hint)
+   since touch buttons replace them. Help overlay switches to a
+   single-column layout and becomes scrollable.
+   ================================================================ */
 @media (max-width: 768px) {
     #game-title {
         font-size: 36px;
@@ -527,6 +673,7 @@ body.has-touch .touch-only-inline {
         min-width: 40px;
     }
 
+    /* Move lives display from bottom-left to top-left on small screens */
     #lives-display {
         bottom: auto;
         top: 50px;
@@ -534,6 +681,7 @@ body.has-touch .touch-only-inline {
         height: 20px;
     }
 
+    /* Hide keyboard shortcut labels — touch buttons serve this purpose */
     #camera-label,
     #mute-label,
     #help-hint {
@@ -545,11 +693,13 @@ body.has-touch .touch-only-inline {
         margin-bottom: 16px;
     }
 
+    /* Stack help columns vertically on narrow screens */
     #help-columns {
         flex-direction: column;
         gap: 12px;
     }
 
+    /* Make help content scrollable if it overflows */
     #help-content {
         max-height: 80vh;
         overflow-y: auto;
@@ -571,6 +721,12 @@ body.has-touch .touch-only-inline {
     }
 }
 
+/* ================================================================
+   RESPONSIVE — SMALL SCREENS + PORTRAIT
+   ================================================================
+   Combined query: on small portrait screens, push the HUD and
+   lives display below the 15vh secondary camera strip.
+   ================================================================ */
 @media (max-width: 768px) and (orientation: portrait) {
     #hud {
         top: calc(15vh + 6px);
@@ -583,6 +739,12 @@ body.has-touch .touch-only-inline {
     }
 }
 
+/* ================================================================
+   ANIMATIONS
+   ================================================================ */
+
+/* Blink animation — used by "READY!" text and overlay message.
+   Fades between full opacity and 30% opacity. */
 @keyframes blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.3; }
