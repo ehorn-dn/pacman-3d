@@ -2,8 +2,8 @@
 name: git-commit-push
 description: >-
   Commit and push changes to git, working around the --trailer incompatibility
-  with older git versions. Use when the user asks to commit, push, or save
-  changes to git.
+  with older git versions. Bumps cache-busting versions in index.html before
+  each push. Use when the user asks to commit, push, or save changes to git.
 ---
 
 # Git Commit & Push
@@ -37,6 +37,24 @@ git add <files>
 /usr/bin/git -c commit.trailer="" commit -F /tmp/commitmsg.txt
 ```
 
+## Cache Version Bump
+
+`index.html` uses `?v=N` query params on asset URLs (e.g. `styles.css?v=11`,
+`game.js?v=12`) for cache busting. **Before every push**, increment each `?v=`
+number in `index.html` by 1.
+
+### How to bump
+
+1. Read `index.html` and find all `?v=N` occurrences.
+2. For each match, replace `?v=N` with `?v=N+1` using the StrReplace tool.
+3. Stage `index.html` and create a separate commit:
+   ```bash
+   git add index.html
+   echo "chore: bump cache version" > /tmp/commitmsg.txt
+   /usr/bin/git -c commit.trailer="" commit -F /tmp/commitmsg.txt
+   ```
+4. Then proceed with `git push`.
+
 ## Full Commit & Push Workflow
 
 1. **Check status and diff** (run in parallel):
@@ -55,9 +73,12 @@ git add <files>
    ```
 
 4. **Push** (only when the user explicitly asks):
-   ```bash
-   git push
-   ```
+   1. **Bump cache version** — follow the "Cache Version Bump" section above
+      to increment all `?v=N` params in `index.html` and commit the bump.
+   2. **Push**:
+      ```bash
+      git push
+      ```
 
 5. **Verify**:
    - `git status` after commit to confirm success
@@ -68,4 +89,5 @@ git add <files>
 - Follow the repo's existing commit message style (check `git log`)
 - Never force-push to main/master without explicit user request
 - Never skip hooks unless the user asks
+- Always bump cache versions before pushing (see "Cache Version Bump" above)
 - Clean up: the temp file at `/tmp/commitmsg.txt` is overwritten each time

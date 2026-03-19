@@ -7,7 +7,7 @@
     <title>PAC-MAN 3D</title>
     <link rel="icon" href="data:,">
     <!-- Cache-busting query param ensures fresh CSS after updates -->
-    <link rel="stylesheet" href="styles.css?v=10">
+    <link rel="stylesheet" href="styles.css?v=11">
     <!-- Aggressive cache-busting headers to prevent stale assets during development -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -137,7 +137,8 @@
             <h2 id="help-title">HOW TO PLAY</h2>
             <!-- Two-column layout: left column = controls, right column = rules & scoring -->
             <div id="help-columns">
-                <div class="help-section">
+                <!-- Keyboard controls — hidden on touch devices -->
+                <div class="help-section keyboard-only">
                     <h3>CONTROLS</h3>
                     <table class="help-table">
                         <tr><td class="help-key">W / &uarr;</td><td>Move Up</td></tr>
@@ -150,6 +151,34 @@
                         <tr><td class="help-key">R</td><td>Reset Options</td></tr>
                         <tr><td class="help-key">H</td><td>Toggle Help</td></tr>
                     </table>
+                    <p class="help-note">In third-person view, controls are relative to Pac-Man's facing direction.</p>
+                </div>
+                <!-- Touch controls — shown only on touch devices -->
+                <div class="help-section help-touch-controls">
+                    <h3>CONTROLS</h3>
+                    <div class="help-touch-group">
+                        <div class="help-touch-label">MOVEMENT</div>
+                        <div class="help-touch-row">
+                            <span class="help-touch-dpad" aria-hidden="true">
+                                <span class="help-dpad-row"><span class="help-dpad-btn">&#9650;</span></span>
+                                <span class="help-dpad-row"><span class="help-dpad-btn">&#9664;</span><span class="help-dpad-spacer"></span><span class="help-dpad-btn">&#9654;</span></span>
+                                <span class="help-dpad-row"><span class="help-dpad-btn">&#9660;</span></span>
+                            </span>
+                            <span class="help-touch-desc">D-Pad</span>
+                        </div>
+                        <div class="help-touch-row">
+                            <span class="help-touch-badge">SWIPE</span>
+                            <span class="help-touch-desc">Swipe mode</span>
+                        </div>
+                    </div>
+                    <div class="help-touch-group">
+                        <div class="help-touch-label">ACTIONS</div>
+                        <div class="help-touch-row"><span class="help-touch-badge">CAM</span><span class="help-touch-desc">Cycle Camera</span></div>
+                        <div class="help-touch-row"><span class="help-touch-badge">&#128264;</span><span class="help-touch-desc">Toggle Sound</span></div>
+                        <div class="help-touch-row"><span class="help-touch-badge">&#9654;</span><span class="help-touch-desc">New Game</span></div>
+                        <div class="help-touch-row"><span class="help-touch-badge">&#8634;</span><span class="help-touch-desc">Reset Options</span></div>
+                        <div class="help-touch-row"><span class="help-touch-badge">?</span><span class="help-touch-desc">Toggle Help</span></div>
+                    </div>
                     <p class="help-note">In third-person view, controls are relative to Pac-Man's facing direction.</p>
                 </div>
                 <div class="help-section">
@@ -172,7 +201,7 @@
                     </ul>
                 </div>
             </div>
-            <p id="help-dismiss">Press <span class="help-key-inline">H</span> or <span class="help-key-inline">ESC</span> to close <span class="touch-only-inline">(or tap <span class="help-key-inline">?</span>)</span></p>
+            <p id="help-dismiss"><span class="keyboard-only">Press <span class="help-key-inline">H</span> or <span class="help-key-inline">ESC</span> to close</span><span class="touch-only-inline">Tap <span class="help-key-inline">&times;</span> or outside to close</span></p>
         </div>
     </div>
 

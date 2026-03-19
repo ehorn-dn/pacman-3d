@@ -170,6 +170,9 @@ body > canvas {
 .keyboard-only {
     display: inline;
 }
+div.keyboard-only {
+    display: block;
+}
 body.has-touch .keyboard-only {
     display: none;
 }
@@ -558,6 +561,98 @@ body.has-touch #help-close {
     font-size: 12px;
 }
 
+/* ----------------------------------------------------------------
+   HELP OVERLAY — TOUCH CONTROLS SECTION
+   ----------------------------------------------------------------
+   Hidden by default; shown when body.has-touch is present.
+   Mirrors the actual on-screen touch buttons so mobile users
+   see recognizable UI elements instead of keyboard shortcuts.
+   ---------------------------------------------------------------- */
+.help-touch-controls {
+    display: none;
+}
+
+body.has-touch .help-touch-controls {
+    display: block;
+}
+
+.help-touch-group {
+    margin-bottom: 14px;
+}
+
+.help-touch-label {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.help-touch-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 5px 0;
+}
+
+.help-touch-desc {
+    font-size: 13px;
+    color: #ccc;
+}
+
+/* Mini D-pad replica inside the help overlay */
+.help-touch-dpad {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    flex-shrink: 0;
+}
+
+.help-dpad-row {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+}
+
+.help-dpad-btn {
+    width: 22px;
+    height: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.help-dpad-spacer {
+    display: inline-block;
+    width: 10px;
+    height: 22px;
+}
+
+/* Circular badge mimicking the on-screen touch buttons */
+.help-touch-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+    padding: 0 4px;
+}
+
 /* ================================================================
    TOUCH CONTROLS
    ================================================================
@@ -866,6 +961,16 @@ body.swipe-mode #touch-controls {
 
     .help-list li {
         font-size: 12px;
+    }
+
+    .help-touch-desc {
+        font-size: 12px;
+    }
+
+    .help-touch-badge {
+        min-width: 36px;
+        height: 36px;
+        font-size: 10px;
     }
 }
 
