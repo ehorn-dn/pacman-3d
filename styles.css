@@ -999,6 +999,47 @@ body.swipe-mode #touch-controls {
 }
 
 /* ================================================================
+   RESPONSIVE — MOBILE LANDSCAPE
+   ================================================================
+   On phones in landscape the viewport height is very limited
+   (~350-400px). Collapse the HUD to a single compact row so it
+   doesn't cover the top of the maze.
+   ================================================================ */
+@media (orientation: landscape) and (max-height: 500px) {
+    #hud {
+        top: 4px;
+        padding: 3px 12px;
+        gap: 18px;
+        width: auto;
+        max-width: 70vw;
+        border-radius: 6px;
+    }
+
+    #hud > div {
+        flex-direction: row;
+        gap: 6px;
+        align-items: baseline;
+    }
+
+    .hud-label {
+        font-size: 8px;
+        letter-spacing: 1px;
+    }
+
+    #score, #high-score, #level {
+        font-size: 14px;
+        min-width: unset;
+    }
+
+    #lives-display {
+        bottom: auto;
+        top: 4px;
+        left: 8px;
+        height: 18px;
+    }
+}
+
+/* ================================================================
    ANIMATIONS
    ================================================================ */
 
