@@ -1106,12 +1106,26 @@ class Game {
         return window.innerWidth / window.innerHeight < 1;
     }
 
+    _getPortraitTopDown() {
+        const aspect = window.innerWidth / window.innerHeight;
+        const mazeHalfZ = ROWS / 2;
+        const vFovRad = THREE.MathUtils.degToRad(60) / 2;
+        const needed = mazeHalfZ + 1.5;
+        const camY = needed / Math.tan(vFovRad) * aspect * 0.62;
+        const camZ = camY * 0.35;
+        return {
+            pos: [0, camY, camZ],
+            target: [0, 0, -1]
+        };
+    }
+
     _createTopDownCamera() {
         const aspect = window.innerWidth / window.innerHeight;
         const cam = new THREE.PerspectiveCamera(60, aspect, 0.1, 200);
         if (this._isPortrait()) {
-            cam.position.set(0, 38, 8);
-            cam.lookAt(0, 0, 0);
+            const { pos, target } = this._getPortraitTopDown();
+            cam.position.set(...pos);
+            cam.lookAt(...target);
         } else {
             cam.position.set(0, 30, 10);
             cam.lookAt(0, 0, 2);
@@ -1123,8 +1137,9 @@ class Game {
         const aspect = window.innerWidth / window.innerHeight;
 
         if (this._isPortrait()) {
-            this.topCamera.position.set(0, 38, 8);
-            this.topCamera.lookAt(0, 0, 0);
+            const { pos, target } = this._getPortraitTopDown();
+            this.topCamera.position.set(...pos);
+            this.topCamera.lookAt(...target);
         } else {
             this.topCamera.position.set(0, 30, 10);
             this.topCamera.lookAt(0, 0, 2);
@@ -1157,7 +1172,9 @@ class Game {
         const dirZ = -Math.sin(angle);
 
         if (this._isPortrait()) {
-            this.topCamera.lookAt(0, 0, 0);
+            const { pos, target } = this._getPortraitTopDown();
+            this.topCamera.position.set(...pos);
+            this.topCamera.lookAt(...target);
         }
 
         const idealPos = new THREE.Vector3(
