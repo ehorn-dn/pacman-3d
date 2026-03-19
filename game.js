@@ -1812,12 +1812,15 @@ class Game {
             const halfW = Math.floor(w / 2);
 
             const savedFog = this.scene.fog;
-            this.scene.fog = null;
+            const mainCam = this.activeCamera;
+            if (mainCam === this.topCamera) {
+                this.scene.fog = null;
+            }
 
             this.renderer.setViewport(0, 0, w, mainH);
             this.renderer.setScissor(0, 0, w, mainH);
             this.renderer.setScissorTest(true);
-            this.renderer.render(this.scene, this.topCamera);
+            this.renderer.render(this.scene, mainCam);
 
             this.scene.fog = savedFog;
 
