@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAC-MAN 3D</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="hud">
+            <div id="hud-left">
+                <span class="hud-label">SCORE</span>
+                <span id="score">0</span>
+            </div>
+            <div id="hud-center">
+                <span class="hud-label">HIGH SCORE</span>
+                <span id="high-score">0</span>
+            </div>
+            <div id="hud-right">
+                <span class="hud-label">LEVEL</span>
+                <span id="level">1</span>
+            </div>
+        </div>
+        <div id="lives-display"></div>
+        <div id="camera-label"></div>
+        <div id="mute-label">[M] SOUND: ON</div>
+        <div id="help-hint">[H] HELP</div>
+        <div id="ready-text" class="hidden">READY!</div>
+        <div id="help-overlay" class="hidden">
+            <div id="help-content">
+                <h2 id="help-title">HOW TO PLAY</h2>
+                <div id="help-columns">
+                    <div class="help-section">
+                        <h3>CONTROLS</h3>
+                        <table class="help-table">
+                            <tr><td class="help-key">W / &uarr;</td><td>Move Up</td></tr>
+                            <tr><td class="help-key">S / &darr;</td><td>Move Down</td></tr>
+                            <tr><td class="help-key">A / &larr;</td><td>Move Left</td></tr>
+                            <tr><td class="help-key">D / &rarr;</td><td>Move Right</td></tr>
+                            <tr><td class="help-key">C</td><td>Cycle Camera</td></tr>
+                            <tr><td class="help-key">M</td><td>Toggle Sound</td></tr>
+                            <tr><td class="help-key">H</td><td>Toggle Help</td></tr>
+                        </table>
+                        <p class="help-note">In third-person view, controls are relative to Pac-Man's facing direction.</p>
+                    </div>
+                    <div class="help-section">
+                        <h3>RULES</h3>
+                        <ul class="help-list">
+                            <li><span class="help-dot dot-small"></span> Eat all dots to complete a level</li>
+                            <li><span class="help-dot dot-power"></span> Power pellets let you eat ghosts</li>
+                            <li>Avoid ghosts &mdash; contact costs a life</li>
+                            <li>You start with 3 lives</li>
+                        </ul>
+                        <h3>SCORING</h3>
+                        <ul class="help-list">
+                            <li>Dot: <span class="help-pts">10</span> pts</li>
+                            <li>Power Pellet: <span class="help-pts">50</span> pts</li>
+                            <li>1st Ghost: <span class="help-pts">200</span> pts</li>
+                            <li>2nd Ghost: <span class="help-pts">400</span> pts</li>
+                            <li>3rd Ghost: <span class="help-pts">800</span> pts</li>
+                            <li>4th Ghost: <span class="help-pts">1600</span> pts</li>
+                        </ul>
+                    </div>
+                </div>
+                <p id="help-dismiss">Press <span class="help-key-inline">H</span> or <span class="help-key-inline">ESC</span> to close</p>
+            </div>
+        </div>
+        <div id="overlay">
+            <div id="overlay-content">
+                <h1 id="game-title">PAC-MAN</h1>
+                <p id="overlay-message">Press any key to start</p>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
