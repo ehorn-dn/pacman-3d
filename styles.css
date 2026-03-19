@@ -7,7 +7,7 @@
        └─ #game-container    (fixed overlay, pointer-events: none)
             ├─ #hud           (score / high-score / level bar)
             ├─ #lives-display (bottom-left life icons)
-            ├─ #camera-label, #mute-label, #help-hint  (keyboard hints)
+            ├─ #camera-label, #mute-label, #reset-label, #help-hint  (keyboard hints)
             ├─ #touch-controls, #touch-actions, #touch-top-actions (mobile)
             ├─ #ready-text    ("READY!" between rounds)
             └─ #overlay       (title / game-over full-screen overlay)
@@ -158,6 +158,17 @@ body > canvas {
 #mute-label {
     position: absolute;
     bottom: 36px;
+    right: 16px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 1px;
+    z-index: 2;
+}
+
+/* "[R] RESET OPTIONS" label */
+#reset-label {
+    position: absolute;
+    bottom: 56px;
     right: 16px;
     font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
@@ -722,6 +733,7 @@ body.swipe-mode #touch-controls {
     /* Hide keyboard shortcut labels — touch buttons serve this purpose */
     #camera-label,
     #mute-label,
+    #reset-label,
     #help-hint {
         display: none;
     }

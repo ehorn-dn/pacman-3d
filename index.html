@@ -47,6 +47,7 @@
         <!-- Keyboard shortcut labels (hidden on mobile via CSS) -->
         <div id="camera-label"></div>
         <div id="mute-label">[M] SOUND: ON</div>
+        <div id="reset-label">[R] RESET OPTIONS</div>
         <div id="help-hint">[H] HELP</div>
 
         <!--
@@ -75,10 +76,11 @@
             <button class="touch-btn" id="touch-camera" aria-label="Cycle Camera">CAM</button>
         </div>
 
-        <!-- Mute + Help buttons — top-right on touch devices -->
+        <!-- Mute + Help + Reset buttons — top-right on touch devices -->
         <div id="touch-top-actions" class="touch-only">
             <button class="touch-btn-sm" id="touch-mute" aria-label="Toggle Sound">&#128264;</button>
             <button class="touch-btn-sm" id="touch-help" aria-label="Help">?</button>
+            <button class="touch-btn-sm" id="touch-reset" aria-label="Reset Options">&#8634;</button>
         </div>
 
         <!-- "READY!" text shown briefly before each round starts (toggled via .hidden class) -->
@@ -118,6 +120,7 @@
                         <tr><td class="help-key">D / &rarr;</td><td>Move Right</td></tr>
                         <tr><td class="help-key">C</td><td>Cycle Camera</td></tr>
                         <tr><td class="help-key">M</td><td>Toggle Sound</td></tr>
+                        <tr><td class="help-key">R</td><td>Reset Options</td></tr>
                         <tr><td class="help-key">H</td><td>Toggle Help</td></tr>
                     </table>
                     <p class="help-note">In third-person view, controls are relative to Pac-Man's facing direction.</p>

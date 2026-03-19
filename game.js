@@ -2163,6 +2163,12 @@ class Game {
                 return;
             }
 
+            // --- Reset all options to defaults ---
+            if (e.key === 'r' || e.key === 'R') {
+                this.resetOptions();
+                return;
+            }
+
             // --- Help toggle ---
             if (e.key === 'h' || e.key === 'H') {
                 this.toggleHelp();
@@ -2426,6 +2432,16 @@ class Game {
             }, { passive: false });
         }
 
+        // --- Reset options button ---
+        const resetBtn = document.getElementById('touch-reset');
+        if (resetBtn) {
+            resetBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.audio.resume();
+                this.resetOptions();
+            }, { passive: false });
+        }
+
         // --- Help close button (×) ---
         const helpClose = document.getElementById('help-close');
         if (helpClose) {
@@ -2480,6 +2496,45 @@ class Game {
     updateMuteLabel() {
         const el = document.getElementById('mute-label');
         if (el) el.textContent = `[M] SOUND: ${this.audio.muted ? 'OFF' : 'ON'}`;
+    }
+
+    /**
+     * Resets all user-configurable options to their defaults:
+     * camera → top-down, sound → on, touch control mode → dpad,
+     * high score → 0. Clears persisted localStorage values.
+     */
+    resetOptions() {
+        // Camera → top-down
+        this.cameraMode = 0;
+        this.activeCamera = this.topCamera;
+        this.updateCameraLabel();
+
+        // Sound → unmuted
+        if (this.audio.muted) {
+            this.audio.toggleMute();
+        }
+        this.updateMuteLabel();
+
+        // Touch control mode → dpad
+        if (this.isTouchDevice) {
+            this.touchControlMode = 'dpad';
+            document.body.classList.remove('swipe-mode');
+            const controlModeBtn = document.getElementById('touch-control-mode');
+            if (controlModeBtn) controlModeBtn.textContent = 'DPAD';
+        }
+
+        // High score → 0
+        this.highScore = 0;
+        this.highScoreEl.textContent = '0';
+
+        // Clear all persisted preferences
+        localStorage.removeItem('pacman-mute');
+        localStorage.removeItem('pacman-control-mode');
+        localStorage.removeItem('pacman-high');
+
+        // Update touch mute button icon
+        const muteBtn = document.getElementById('touch-mute');
+        if (muteBtn) muteBtn.textContent = '\u{1F509}';
     }
 
     // --------------------------------------------------------
