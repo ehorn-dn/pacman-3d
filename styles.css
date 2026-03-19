@@ -486,16 +486,10 @@ body.has-touch .touch-only-inline {
     border-color: rgba(255, 255, 0, 0.5);
 }
 
-/* Portrait mode -- secondary views above/below main */
+/* Portrait mode -- secondary views side-by-side at top */
 @media (orientation: portrait) {
     #hud {
         top: calc(15vh + 6px);
-    }
-    #touch-controls {
-        bottom: calc(15vh + 8px + env(safe-area-inset-bottom, 0px));
-    }
-    #touch-actions {
-        bottom: calc(15vh + 8px + env(safe-area-inset-bottom, 0px));
     }
     #touch-top-actions {
         top: calc(15vh + 50px);
@@ -582,6 +576,9 @@ body.has-touch .touch-only-inline {
         top: calc(15vh + 6px);
     }
     #lives-display {
+        top: calc(15vh + 50px);
+    }
+    #touch-top-actions {
         top: calc(15vh + 50px);
     }
 }

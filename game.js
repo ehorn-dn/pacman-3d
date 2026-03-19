@@ -1792,24 +1792,25 @@ class Game {
 
         if (portrait) {
             const stripH = Math.floor(h * 0.15);
-            const mainH = h - stripH * 2;
+            const mainH = h - stripH;
+            const halfW = Math.floor(w / 2);
 
-            this.renderer.setViewport(0, stripH, w, mainH);
-            this.renderer.setScissor(0, stripH, w, mainH);
+            this.renderer.setViewport(0, 0, w, mainH);
+            this.renderer.setScissor(0, 0, w, mainH);
             this.renderer.setScissorTest(true);
             this.renderer.render(this.scene, this.activeCamera);
 
-            const topCam = this.cameraMode === 0 ? this.frontCamera : this.topCamera;
-            this.renderer.setViewport(0, mainH + stripH, w, stripH);
-            this.renderer.setScissor(0, mainH + stripH, w, stripH);
-            this.renderer.render(this.scene, topCam);
+            const leftCam = this.cameraMode === 0 ? this.frontCamera : this.topCamera;
+            this.renderer.setViewport(0, mainH, halfW, stripH);
+            this.renderer.setScissor(0, mainH, halfW, stripH);
+            this.renderer.render(this.scene, leftCam);
 
-            const botCam = this.cameraMode === 0 ? this.minimapCamera : this.topCamera;
+            const rightCam = this.cameraMode === 0 ? this.minimapCamera : this.topCamera;
             const savedFog = this.scene.fog;
             if (this.cameraMode === 0) this.scene.fog = null;
-            this.renderer.setViewport(0, 0, w, stripH);
-            this.renderer.setScissor(0, 0, w, stripH);
-            this.renderer.render(this.scene, botCam);
+            this.renderer.setViewport(halfW, mainH, w - halfW, stripH);
+            this.renderer.setScissor(halfW, mainH, w - halfW, stripH);
+            this.renderer.render(this.scene, rightCam);
             this.renderer.setScissorTest(false);
             this.scene.fog = savedFog;
         } else {
