@@ -671,12 +671,9 @@ class Ghost {
 function createPacmanMesh() {
     const group = new THREE.Group();
 
-    // Top half of Pac-Man (upper jaw) — hemisphere from 0 to π/2
-    const topGeo = new THREE.SphereGeometry(0.45, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2);
-    // Bottom half (lower jaw) — hemisphere from π/2 to π
-    const bottomGeo = new THREE.SphereGeometry(0.45, 24, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
+    const topGeo = new THREE.SphereGeometry(0.45, 32, 20, 0, Math.PI * 2, 0, Math.PI / 2);
+    const bottomGeo = new THREE.SphereGeometry(0.45, 32, 20, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
 
-    // Yellow material with warm emissive glow
     const mat = new THREE.MeshStandardMaterial({
         color: 0xffff00,
         emissive: 0x886600,
@@ -691,14 +688,41 @@ function createPacmanMesh() {
     group.add(topHalf);
     group.add(bottomHalf);
 
-    // Store references for mouth animation
+    // Eyes parented to topHalf so they move with the upper jaw
+    const eyeGeo = new THREE.SphereGeometry(0.055, 10, 8);
+    const eyeMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.0 });
+    const eyeHighlightGeo = new THREE.SphereGeometry(0.02, 6, 6);
+    const eyeHighlightMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5
+    });
+    for (const side of [-1, 1]) {
+        const eye = new THREE.Mesh(eyeGeo, eyeMat);
+        eye.position.set(side * 0.16, 0.08, 0.36);
+        topHalf.add(eye);
+        const highlight = new THREE.Mesh(eyeHighlightGeo, eyeHighlightMat);
+        highlight.position.set(0.02, 0.02, 0.03);
+        eye.add(highlight);
+    }
+
+    // Dark mouth interior visible when jaws open
+    const mouthInteriorGeo = new THREE.SphereGeometry(0.3, 16, 12);
+    const mouthInteriorMat = new THREE.MeshStandardMaterial({
+        color: 0x440000, emissive: 0x220000, emissiveIntensity: 0.2,
+        roughness: 0.9, metalness: 0.0, side: THREE.BackSide
+    });
+    const mouthInterior = new THREE.Mesh(mouthInteriorGeo, mouthInteriorMat);
+    mouthInterior.position.set(0, 0, 0.05);
+    mouthInterior.scale.set(1, 0.5, 1);
+    group.add(mouthInterior);
+
     group.userData.topHalf = topHalf;
     group.userData.bottomHalf = bottomHalf;
+    group.userData.mouthInterior = mouthInterior;
 
-    // Subtle yellow point light emanating from Pac-Man
     const light = new THREE.PointLight(0xffff00, 0.4, 4);
     light.position.set(0, 0.3, 0);
     group.add(light);
+    group.userData.light = light;
 
     return group;
 }
@@ -722,11 +746,10 @@ function createPacmanMesh() {
 function createGhostMesh(colorHex) {
     const group = new THREE.Group();
 
-    // --- Body group: head dome + cylindrical skirt + tentacles ---
     const bodyGroup = new THREE.Group();
 
-    // Dome-shaped head (upper hemisphere)
-    const headGeo = new THREE.SphereGeometry(0.4, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+    // Dome head with higher poly count for smoother appearance
+    const headGeo = new THREE.SphereGeometry(0.4, 28, 16, 0, Math.PI * 2, 0, Math.PI / 2);
     const headMat = new THREE.MeshStandardMaterial({
         color: colorHex,
         emissive: colorHex,
@@ -738,8 +761,8 @@ function createGhostMesh(colorHex) {
     head.position.y = 0.05;
     bodyGroup.add(head);
 
-    // Cylindrical skirt (body below the dome)
-    const skirtGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.45, 20);
+    // Tapered skirt — slightly wider at the bottom for the classic ghost silhouette
+    const skirtGeo = new THREE.CylinderGeometry(0.4, 0.42, 0.45, 28);
     const skirtMat = new THREE.MeshStandardMaterial({
         color: colorHex,
         emissive: colorHex,
@@ -751,73 +774,81 @@ function createGhostMesh(colorHex) {
     skirt.position.y = -0.175;
     bodyGroup.add(skirt);
 
-    // Tentacle bumps along the bottom edge — 4 positions × 3 rows (front, center, back)
-    const tentacleGeo = new THREE.SphereGeometry(0.13, 8, 6);
+    // Scalloped tentacles arranged in a circle around the bottom
+    const tentacleGeo = new THREE.SphereGeometry(0.14, 10, 8);
     const tentacleMat = new THREE.MeshStandardMaterial({
         color: colorHex,
         emissive: colorHex,
         emissiveIntensity: 0.15,
         roughness: 0.4
     });
-    const tentaclePositions = [-0.26, -0.09, 0.09, 0.26];
-    for (const xp of tentaclePositions) {
-        // Three tentacles per X position at different Z depths
+    const tentacles = [];
+    const tentacleCount = 8;
+    for (let i = 0; i < tentacleCount; i++) {
+        const angle = (i / tentacleCount) * Math.PI * 2;
+        const tx = Math.cos(angle) * 0.3;
+        const tz = Math.sin(angle) * 0.3;
         const t = new THREE.Mesh(tentacleGeo, tentacleMat);
-        t.position.set(xp, -0.4, 0);
-        t.scale.y = 0.7;  // Squash vertically for a rounded-bump look
+        t.position.set(tx, -0.4, tz);
+        t.scale.set(1, 0.7, 1);
         bodyGroup.add(t);
-        const t2 = new THREE.Mesh(tentacleGeo, tentacleMat);
-        t2.position.set(xp, -0.4, 0.15);
-        t2.scale.y = 0.7;
-        bodyGroup.add(t2);
-        const t3 = new THREE.Mesh(tentacleGeo, tentacleMat);
-        t3.position.set(xp, -0.4, -0.15);
-        t3.scale.y = 0.7;
-        bodyGroup.add(t3);
+        tentacles.push(t);
     }
 
     group.add(bodyGroup);
 
-    // --- Normal eye group: white eyeballs with blue pupils ---
+    // --- Eyes with trackable pupils ---
     const eyeGroup = new THREE.Group();
-    const eyeWhiteGeo = new THREE.SphereGeometry(0.1, 10, 8);
-    const eyeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
-    const pupilGeo = new THREE.SphereGeometry(0.055, 8, 6);
-    const pupilMat = new THREE.MeshStandardMaterial({ color: 0x0000ff, roughness: 0.2 });
+    const eyeWhiteGeo = new THREE.SphereGeometry(0.11, 12, 10);
+    const eyeWhiteMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff, roughness: 0.15, metalness: 0.0
+    });
+    const pupilGeo = new THREE.SphereGeometry(0.06, 10, 8);
+    const pupilMat = new THREE.MeshStandardMaterial({
+        color: 0x1111cc, roughness: 0.15, metalness: 0.0
+    });
 
-    // Create left (-1) and right (+1) eyes
+    const pupils = [];
     for (const side of [-1, 1]) {
         const eyeWhite = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
-        eyeWhite.position.set(side * 0.15, 0.12, 0.32);
-        eyeWhite.scale.set(1, 1.2, 0.8);  // Slightly tall and flat
+        eyeWhite.position.set(side * 0.16, 0.12, 0.32);
+        eyeWhite.scale.set(1, 1.25, 0.85);
         eyeGroup.add(eyeWhite);
 
         const pupil = new THREE.Mesh(pupilGeo, pupilMat);
-        pupil.position.set(side * 0.15, 0.1, 0.38);  // Slightly forward of the white
+        pupil.position.set(side * 0.16, 0.1, 0.39);
         eyeGroup.add(pupil);
+        pupils.push(pupil);
     }
     group.add(eyeGroup);
 
-    // --- Frightened face: small dot eyes + straight mouth line ---
-    // Hidden by default, shown only during frightened mode
+    // --- Frightened face with wavy mouth ---
     const frightenedFaceGroup = new THREE.Group();
-    const fEyeGeo = new THREE.SphereGeometry(0.06, 6, 6);
-    const fEyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    const fEyeGeo = new THREE.SphereGeometry(0.055, 8, 8);
+    const fEyeMat = new THREE.MeshStandardMaterial({
+        color: 0xffcccc, emissive: 0xffcccc, emissiveIntensity: 0.3
+    });
     for (const side of [-1, 1]) {
         const fEye = new THREE.Mesh(fEyeGeo, fEyeMat);
         fEye.position.set(side * 0.12, 0.12, 0.38);
         frightenedFaceGroup.add(fEye);
     }
-    // Thin rectangular mouth
-    const mouthGeo = new THREE.BoxGeometry(0.3, 0.03, 0.03);
-    const mouthMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-    const mouth = new THREE.Mesh(mouthGeo, mouthMat);
-    mouth.position.set(0, -0.05, 0.4);
-    frightenedFaceGroup.add(mouth);
+    // Wavy mouth made of small segments for a zig-zag look
+    const fMouthMat = new THREE.MeshStandardMaterial({
+        color: 0xffcccc, emissive: 0xffcccc, emissiveIntensity: 0.3
+    });
+    const mouthSegGeo = new THREE.BoxGeometry(0.06, 0.025, 0.025);
+    const mouthSegments = 6;
+    for (let i = 0; i < mouthSegments; i++) {
+        const seg = new THREE.Mesh(mouthSegGeo, fMouthMat);
+        const xOff = (i - (mouthSegments - 1) / 2) * 0.055;
+        const yOff = (i % 2 === 0) ? 0.015 : -0.015;
+        seg.position.set(xOff, -0.06 + yOff, 0.4);
+        frightenedFaceGroup.add(seg);
+    }
     frightenedFaceGroup.visible = false;
     group.add(frightenedFaceGroup);
 
-    // Store references for runtime visual state switching
     group.userData.bodyGroup = bodyGroup;
     group.userData.eyeGroup = eyeGroup;
     group.userData.frightenedFaceGroup = frightenedFaceGroup;
@@ -825,6 +856,8 @@ function createGhostMesh(colorHex) {
     group.userData.skirtMat = skirtMat;
     group.userData.tentacleMat = tentacleMat;
     group.userData.originalColor = colorHex;
+    group.userData.tentacles = tentacles;
+    group.userData.pupils = pupils;
 
     return group;
 }
@@ -2465,33 +2498,75 @@ class Game {
         const mesh = this.pacmanMesh;
         if (!mesh) return;
 
-        // Position: convert pixel coordinates to world coordinates
         const wx = toWorldX(this.pacman.pixelX);
         const wz = toWorldZ(this.pacman.pixelY);
         mesh.position.set(wx, 0.2, wz);
 
-        // Rotation: face the movement direction (+90° offset for mesh orientation)
         const angle = dirToAngle(this.pacman.dir);
         mesh.rotation.y = angle + Math.PI / 2;
 
-        // Mouth animation: rotate top half up and bottom half down
         const mouthOpen = this.pacman.mouthAngle * 0.45;
         mesh.userData.topHalf.rotation.x = -mouthOpen;
         mesh.userData.bottomHalf.rotation.x = mouthOpen;
 
-        // Death animation: shrink, rise, and spin
-        if (this.pacman.dying) {
-            const progress = Math.min(this.pacman.deathFrame / 60, 1);  // 0→1 over 60 frames
-            const scale = Math.max(1 - progress, 0.01);                 // Shrink to near-zero
-            mesh.scale.set(scale, scale, scale);
-            mesh.position.y = 0.2 + progress * 2;                       // Rise upward
-            mesh.rotation.z = progress * Math.PI * 4;                    // Spin 2 full rotations
-        } else {
-            mesh.scale.set(1, 1, 1);
-            mesh.rotation.z = 0;
+        // Scale mouth interior visibility with mouth opening
+        if (mesh.userData.mouthInterior) {
+            mesh.userData.mouthInterior.scale.y = 0.15 + this.pacman.mouthAngle * 0.45;
         }
 
-        // Hide mesh completely after death animation finishes
+        if (this.pacman.dying) {
+            const df = this.pacman.deathFrame;
+            const light = mesh.userData.light;
+
+            if (df < 15) {
+                // Phase 1: flatten into a pancake with a light flash
+                const p = df / 15;
+                const sy = Math.max(1 - p * 0.7, 0.3);
+                const sxz = 1 + p * 0.3;
+                mesh.scale.set(sxz, sy, sxz);
+                mesh.rotation.z = 0;
+                mesh.position.y = 0.2;
+                if (light) light.intensity = 0.4 + (1 - p) * 2.0;
+            } else {
+                // Phase 2: spin, shrink, and rise
+                const p2 = Math.min((df - 15) / 45, 1);
+                const scale = Math.max((1 - p2) * 1.3, 0.01);
+                mesh.scale.set(scale, scale, scale);
+                mesh.position.y = 0.2 + p2 * 2.5;
+                mesh.rotation.z = p2 * Math.PI * 6;
+                if (light) light.intensity = Math.max(0.4 * (1 - p2), 0);
+            }
+        } else {
+            mesh.rotation.z = 0;
+
+            // Squash-and-stretch when moving
+            const dir = this.pacman.dir;
+            const isMoving = dir !== DIR.NONE && (dir.x !== 0 || dir.y !== 0);
+            const lerpSpeed = 0.12;
+
+            if (isMoving) {
+                // Elongate along movement axis, compress perpendicular
+                const stretch = 1.08;
+                const squash = 0.94;
+                if (dir.x !== 0) {
+                    // Horizontal movement: stretch is along world-X (but mesh is rotated, so use Z for forward)
+                    mesh.scale.x += (stretch - mesh.scale.x) * lerpSpeed;
+                    mesh.scale.y += (squash - mesh.scale.y) * lerpSpeed;
+                    mesh.scale.z += (squash - mesh.scale.z) * lerpSpeed;
+                } else {
+                    mesh.scale.x += (squash - mesh.scale.x) * lerpSpeed;
+                    mesh.scale.y += (squash - mesh.scale.y) * lerpSpeed;
+                    mesh.scale.z += (stretch - mesh.scale.z) * lerpSpeed;
+                }
+            } else {
+                mesh.scale.x += (1 - mesh.scale.x) * lerpSpeed;
+                mesh.scale.y += (1 - mesh.scale.y) * lerpSpeed;
+                mesh.scale.z += (1 - mesh.scale.z) * lerpSpeed;
+            }
+
+            if (mesh.userData.light) mesh.userData.light.intensity = 0.4;
+        }
+
         mesh.visible = !(this.pacman.dying && this.pacman.deathFrame >= 60);
     }
 
@@ -2513,20 +2588,45 @@ class Game {
             const mesh = g._mesh;
             if (!mesh) continue;
 
-            // Position with subtle vertical bobbing
             const wx = toWorldX(g.pixelX);
             const wz = toWorldZ(g.pixelY);
             mesh.position.set(wx, 0.15, wz);
 
-            // Gentle sine-wave bobbing (offset by pixelX to desynchronize ghosts)
-            const bobY = Math.sin(t * 0.08 + g.pixelX * 0.1) * 0.04;
+            const phaseOffset = g.pixelX * 0.1;
+            const bobY = Math.sin(t * 0.08 + phaseOffset) * 0.04;
             mesh.position.y += bobY;
 
-            // Face the movement direction (+90° offset because the mesh face points +Z)
             const angle = dirToAngle(g.dir);
             mesh.rotation.y = angle + Math.PI / 2;
 
-            // Extract sub-groups and materials for state switching
+            // Ghostly wobble/sway — subtle tilt that oscillates while floating
+            mesh.rotation.z = Math.sin(t * 0.06 + phaseOffset * 1.7) * 0.05;
+
+            // Tentacle undulation — each tentacle bobs independently
+            const tentacles = mesh.userData.tentacles;
+            if (tentacles) {
+                for (let i = 0; i < tentacles.length; i++) {
+                    const tentacle = tentacles[i];
+                    const wave = Math.sin(t * 0.12 + i * (Math.PI * 2 / tentacles.length)) * 0.04;
+                    tentacle.position.y = -0.4 + wave;
+                    tentacle.scale.y = 0.7 + Math.sin(t * 0.1 + i * 0.8) * 0.12;
+                }
+            }
+
+            // Pupil direction tracking — pupils shift toward movement direction
+            const pupils = mesh.userData.pupils;
+            if (pupils) {
+                let pxOff = 0, pzOff = 0;
+                if (g.dir === DIR.RIGHT)     { pxOff = 0;     pzOff = 0.04; }
+                else if (g.dir === DIR.LEFT)  { pxOff = 0;     pzOff = -0.04; }
+                else if (g.dir === DIR.UP)    { pxOff = 0.03;  pzOff = 0; }
+                else if (g.dir === DIR.DOWN)  { pxOff = -0.03; pzOff = 0; }
+
+                // Pupils are at index 0 (left, side=-1) and 1 (right, side=+1)
+                pupils[0].position.set(-0.16 + pzOff, 0.1 + pxOff, 0.39);
+                pupils[1].position.set(0.16 + pzOff, 0.1 + pxOff, 0.39);
+            }
+
             const bodyGroup = mesh.userData.bodyGroup;
             const eyeGroup = mesh.userData.eyeGroup;
             const frightenedFace = mesh.userData.frightenedFaceGroup;
@@ -2536,18 +2636,15 @@ class Game {
             const origColor = mesh.userData.originalColor;
 
             if (g.mode === GHOST_MODE.EATEN) {
-                // Eaten: show only the eyes (body is invisible)
                 bodyGroup.visible = false;
                 eyeGroup.visible = true;
                 frightenedFace.visible = false;
 
             } else if (g.mode === GHOST_MODE.FRIGHTENED) {
-                // Frightened: blue body with simple face
                 bodyGroup.visible = true;
                 eyeGroup.visible = false;
                 frightenedFace.visible = true;
 
-                // Flash white when frightened timer is about to expire (<120 frames = ~2 seconds)
                 const flashing = g.frightTimer < 120 && Math.floor(t / 10) % 2 === 0;
                 const color = flashing ? 0xffffff : 0x2121de;
                 headMat.color.setHex(color);
@@ -2557,8 +2654,14 @@ class Game {
                 tentacleMat.color.setHex(color);
                 tentacleMat.emissive.setHex(color);
 
+                // Frightened trembling — intensifies as timer runs down
+                const maxFright = 360;
+                const urgency = 1 - Math.min(g.frightTimer / maxFright, 1);
+                const shake = (0.01 + urgency * 0.02);
+                mesh.position.x += (Math.random() - 0.5) * shake * 2;
+                mesh.position.z += (Math.random() - 0.5) * shake * 2;
+
             } else {
-                // Normal: show colored body + eyes
                 bodyGroup.visible = true;
                 eyeGroup.visible = true;
                 frightenedFace.visible = false;
@@ -2570,8 +2673,6 @@ class Game {
                 tentacleMat.emissive.setHex(origColor);
             }
 
-            // Hide ghosts during the death animation (after 30 frames)
-            // so only Pac-Man's death animation is visible
             if (this.state === STATE.DEATH && this.stateTimer >= 30) {
                 mesh.visible = false;
             } else {
