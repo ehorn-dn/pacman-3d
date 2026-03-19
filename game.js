@@ -1833,13 +1833,13 @@ class Game {
             const stripCam = this.cameraMode === 0
                 ? this.thirdPersonCamera
                 : this.minimapCamera;
-            const stripNeedsFogOff = stripCam === this.minimapCamera;
-            if (stripNeedsFogOff) this.scene.fog = null;
+            document.title = 'cam=' + this.cameraMode + ' strip=' + (stripCam === this.thirdPersonCamera ? '3P' : 'MAP');
+            this.scene.fog = null;
             this.renderer.setViewport(halfW, mainH, w - halfW, stripH);
             this.renderer.setScissor(halfW, mainH, w - halfW, stripH);
             this.renderer.render(this.scene, stripCam);
             this.renderer.setScissorTest(false);
-            if (stripNeedsFogOff) this.scene.fog = savedFog;
+            this.scene.fog = savedFog;
         } else {
             if (this.scene.fog) {
                 const camDist = this.activeCamera.position.length();
