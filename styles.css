@@ -1038,6 +1038,14 @@ body.swipe-mode #touch-controls {
         height: 18px;
     }
 
+    #camera-label,
+    #mute-label,
+    #new-game-label,
+    #reset-label,
+    #help-hint {
+        display: none;
+    }
+
     #help-overlay {
         align-items: flex-start;
     }
