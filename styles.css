@@ -109,6 +109,7 @@ body > canvas {
     font-size: 11px;
     color: #aaa;
     letter-spacing: 2px;
+    white-space: nowrap;
 }
 
 /* Large white numeric values in the HUD */
