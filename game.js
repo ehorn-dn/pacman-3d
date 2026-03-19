@@ -1452,53 +1452,285 @@ class Game {
     //  3D MAZE CONSTRUCTION
     // --------------------------------------------------------
 
+    _createWallTexture() {
+        const size = 128;
+        const c = document.createElement('canvas');
+        c.width = size; c.height = size;
+        const ctx = c.getContext('2d');
+
+        ctx.fillStyle = '#2121de';
+        ctx.fillRect(0, 0, size, size);
+
+        // Horizontal circuit traces
+        ctx.strokeStyle = 'rgba(80, 80, 255, 0.35)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 6; i++) {
+            const y = 10 + i * 20 + (i % 2) * 6;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(size * 0.3, y);
+            ctx.lineTo(size * 0.35, y + 8);
+            ctx.lineTo(size * 0.65, y + 8);
+            ctx.lineTo(size * 0.7, y);
+            ctx.lineTo(size, y);
+            ctx.stroke();
+        }
+
+        // Vertical traces
+        for (let i = 0; i < 4; i++) {
+            const x = 20 + i * 28;
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, size * 0.4);
+            ctx.lineTo(x + 6, size * 0.45);
+            ctx.lineTo(x + 6, size * 0.7);
+            ctx.lineTo(x, size * 0.75);
+            ctx.lineTo(x, size);
+            ctx.stroke();
+        }
+
+        // Junction nodes
+        ctx.fillStyle = 'rgba(100, 100, 255, 0.5)';
+        for (let i = 0; i < 8; i++) {
+            const nx = 15 + (i * 37) % size;
+            const ny = 12 + (i * 43) % size;
+            ctx.beginPath();
+            ctx.arc(nx, ny, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Subtle grid overlay
+        ctx.strokeStyle = 'rgba(40, 40, 180, 0.2)';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < size; i += 16) {
+            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, size); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(size, i); ctx.stroke();
+        }
+
+        const tex = new THREE.CanvasTexture(c);
+        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+        return tex;
+    }
+
+    _createWallBumpMap() {
+        const size = 128;
+        const c = document.createElement('canvas');
+        c.width = size; c.height = size;
+        const ctx = c.getContext('2d');
+
+        ctx.fillStyle = '#808080';
+        ctx.fillRect(0, 0, size, size);
+
+        // Raised brick pattern
+        ctx.fillStyle = '#999999';
+        for (let row = 0; row < 8; row++) {
+            const offset = (row % 2) * 8;
+            for (let col = 0; col < 8; col++) {
+                ctx.fillRect(col * 16 + offset + 1, row * 16 + 1, 14, 14);
+            }
+        }
+
+        // Circuit trace grooves (darker = indented)
+        ctx.strokeStyle = '#606060';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 5; i++) {
+            const y = 12 + i * 24;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(size * 0.4, y);
+            ctx.lineTo(size * 0.5, y + 6);
+            ctx.lineTo(size, y + 6);
+            ctx.stroke();
+        }
+
+        const tex = new THREE.CanvasTexture(c);
+        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+        return tex;
+    }
+
+    _createFloorTexture() {
+        const tileSize = 16;
+        const w = COLS * tileSize;
+        const h = ROWS * tileSize;
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        const ctx = c.getContext('2d');
+
+        ctx.fillStyle = '#0a0a1a';
+        ctx.fillRect(0, 0, w, h);
+
+        // Tile grid lines
+        ctx.strokeStyle = 'rgba(30, 30, 80, 0.6)';
+        ctx.lineWidth = 0.5;
+        for (let x = 0; x <= COLS; x++) {
+            ctx.beginPath(); ctx.moveTo(x * tileSize, 0); ctx.lineTo(x * tileSize, h); ctx.stroke();
+        }
+        for (let y = 0; y <= ROWS; y++) {
+            ctx.beginPath(); ctx.moveTo(0, y * tileSize); ctx.lineTo(w, y * tileSize); ctx.stroke();
+        }
+
+        // Subtle dot at each grid intersection
+        ctx.fillStyle = 'rgba(40, 40, 120, 0.4)';
+        for (let x = 0; x <= COLS; x++) {
+            for (let y = 0; y <= ROWS; y++) {
+                ctx.beginPath();
+                ctx.arc(x * tileSize, y * tileSize, 1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Faint radial gradient from center
+        const grd = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w * 0.6);
+        grd.addColorStop(0, 'rgba(20, 20, 60, 0.15)');
+        grd.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, w, h);
+
+        const tex = new THREE.CanvasTexture(c);
+        tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+        return tex;
+    }
+
+    _isGhostHouseWall(x, y) {
+        return y >= 12 && y <= 16 && x >= 10 && x <= 17
+            && this.maze[y][x] === CELL.WALL;
+    }
+
+    _isBoundaryWall(x, y) {
+        return y === 0 || y === ROWS - 1 || x === 0 || x === COLS - 1;
+    }
+
+    _tileIsWall(x, y) {
+        if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return false;
+        return this.maze[y][x] === CELL.WALL;
+    }
+
     /**
      * Generates the 3D representation of the maze from the tile grid.
      * Called once at startup and again when advancing to a new level
      * (to restore all dots).
      *
      * Creates:
-     *   - A large floor plane beneath the maze
-     *   - Wall blocks (blue cubes) for each WALL tile
+     *   - A textured floor plane with grid pattern
+     *   - Wall blocks with procedural circuit-board textures and height variation
+     *   - Neon edge strips along exposed wall tops
+     *   - Beveled wall top caps
      *   - Small glowing spheres for DOT tiles
      *   - Larger pulsing spheres with point lights for POWER pellet tiles
-     *   - Pink gate bars at the ghost house entrance
+     *   - Decorated ghost house with tinted walls and glowing gate
      *
      * Dot and power pellet meshes are stored in dictionaries keyed
      * by "x,y" so they can be hidden when eaten.
      */
     buildMaze3D() {
-        // Remove previous maze if rebuilding (level transition)
         if (this.mazeGroup) this.scene.remove(this.mazeGroup);
         this.mazeGroup = new THREE.Group();
-        this.dotMeshes = {};    // Map of "x,y" → dot mesh
-        this.powerMeshes = {};  // Map of "x,y" → power pellet mesh
+        this.dotMeshes = {};
+        this.powerMeshes = {};
 
-        // --- Floor plane: slightly larger than the maze ---
+        // --- Procedural textures ---
+        const wallTex = this._createWallTexture();
+        const wallBump = this._createWallBumpMap();
+        const floorTex = this._createFloorTexture();
+
+        // --- Textured floor plane ---
         const floorGeo = new THREE.PlaneGeometry(COLS + 2, ROWS + 2);
         const floorMat = new THREE.MeshStandardMaterial({
             color: 0x0a0a1a,
-            roughness: 0.8,
+            map: floorTex,
+            roughness: 0.85,
             metalness: 0.3
         });
         const floor = new THREE.Mesh(floorGeo, floorMat);
-        floor.rotation.x = -Math.PI / 2;  // Rotate to lie flat on XZ plane
-        floor.position.set(0, -0.5, 0);   // Slightly below the wall bases
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.set(0, -0.5, 0);
         floor.receiveShadow = true;
         this.mazeGroup.add(floor);
 
-        // --- Shared wall geometry and material ---
-        // All walls share the same geometry and material for instancing efficiency.
-        // Blue color with emissive glow matches the classic Pac-Man aesthetic.
-        const wallGeo = new THREE.BoxGeometry(1, 0.8, 1);
+        // --- Wall geometries for different heights ---
+        const WALL_H_OUTER = 1.0;
+        const WALL_H_INNER = 0.8;
+        const WALL_H_GHOST = 0.6;
+        const wallGeoOuter = new THREE.BoxGeometry(1, WALL_H_OUTER, 1);
+        const wallGeoInner = new THREE.BoxGeometry(1, WALL_H_INNER, 1);
+        const wallGeoGhost = new THREE.BoxGeometry(1, WALL_H_GHOST, 1);
+
+        // --- Wall top cap geometries (slightly wider bevel) ---
+        const capH = 0.06;
+        const capOverhang = 1.06;
+        const capGeoOuter = new THREE.BoxGeometry(capOverhang, capH, capOverhang);
+        const capGeoInner = new THREE.BoxGeometry(capOverhang, capH, capOverhang);
+        const capGeoGhost = new THREE.BoxGeometry(capOverhang, capH, capOverhang);
+
+        // --- Wall materials ---
         const wallMat = new THREE.MeshStandardMaterial({
             color: 0x2121de,
             emissive: 0x0a0a6e,
             emissiveIntensity: 0.4,
-            roughness: 0.5,
-            metalness: 0.2
+            roughness: 0.45,
+            metalness: 0.2,
+            map: wallTex,
+            bumpMap: wallBump,
+            bumpScale: 0.15
         });
-        this.wallMat = wallMat;  // Store reference for level-complete flash animation
+        this.wallMat = wallMat;
+
+        const wallCapMat = new THREE.MeshStandardMaterial({
+            color: 0x3535ee,
+            emissive: 0x1515aa,
+            emissiveIntensity: 0.3,
+            roughness: 0.3,
+            metalness: 0.4
+        });
+        this.wallCapMat = wallCapMat;
+
+        const ghostHouseWallMat = new THREE.MeshStandardMaterial({
+            color: 0x1a1a8e,
+            emissive: 0x0808aa,
+            emissiveIntensity: 0.5,
+            roughness: 0.4,
+            metalness: 0.15,
+            map: wallTex,
+            bumpMap: wallBump,
+            bumpScale: 0.1,
+            transparent: true,
+            opacity: 0.85
+        });
+        this.ghostHouseWallMat = ghostHouseWallMat;
+
+        const ghostHouseCapMat = new THREE.MeshStandardMaterial({
+            color: 0x2a2aaa,
+            emissive: 0x1010cc,
+            emissiveIntensity: 0.4,
+            roughness: 0.3,
+            metalness: 0.3,
+            transparent: true,
+            opacity: 0.85
+        });
+
+        // --- Neon edge strip geometry and material ---
+        const neonH = 0.04;
+        const neonDepth = 0.06;
+        const neonGeoX = new THREE.BoxGeometry(1.02, neonH, neonDepth);
+        const neonGeoZ = new THREE.BoxGeometry(neonDepth, neonH, 1.02);
+        const neonMat = new THREE.MeshStandardMaterial({
+            color: 0x44aaff,
+            emissive: 0x44aaff,
+            emissiveIntensity: 1.0,
+            roughness: 0.1,
+            metalness: 0.0,
+            transparent: true,
+            opacity: 0.8
+        });
+        const neonGhostMat = new THREE.MeshStandardMaterial({
+            color: 0x8855ff,
+            emissive: 0x8855ff,
+            emissiveIntensity: 0.9,
+            roughness: 0.1,
+            metalness: 0.0,
+            transparent: true,
+            opacity: 0.7
+        });
 
         // --- Dot geometry and material ---
         const dotGeo = new THREE.SphereGeometry(0.08, 8, 6);
@@ -1522,48 +1754,110 @@ class Game {
         for (let y = 0; y < ROWS; y++) {
             for (let x = 0; x < COLS; x++) {
                 const cell = this.maze[y][x];
-                // Convert tile coordinates to world coordinates (centered at origin)
                 const wx = x - COLS / 2 + 0.5;
                 const wz = y - ROWS / 2 + 0.5;
 
                 if (cell === CELL.WALL) {
-                    const wall = new THREE.Mesh(wallGeo, wallMat);
-                    wall.position.set(wx, 0, wz);
+                    const isGhost = this._isGhostHouseWall(x, y);
+                    const isBound = this._isBoundaryWall(x, y);
+
+                    let geo, h, mat, capGeo, cMat, edgeMat;
+                    if (isGhost) {
+                        geo = wallGeoGhost; h = WALL_H_GHOST;
+                        mat = ghostHouseWallMat; capGeo = capGeoGhost;
+                        cMat = ghostHouseCapMat; edgeMat = neonGhostMat;
+                    } else if (isBound) {
+                        geo = wallGeoOuter; h = WALL_H_OUTER;
+                        mat = wallMat; capGeo = capGeoOuter;
+                        cMat = wallCapMat; edgeMat = neonMat;
+                    } else {
+                        geo = wallGeoInner; h = WALL_H_INNER;
+                        mat = wallMat; capGeo = capGeoInner;
+                        cMat = wallCapMat; edgeMat = neonMat;
+                    }
+
+                    const yOff = (h - WALL_H_INNER) / 2;
+
+                    const wall = new THREE.Mesh(geo, mat);
+                    wall.position.set(wx, yOff, wz);
                     wall.castShadow = true;
                     wall.receiveShadow = true;
                     this.mazeGroup.add(wall);
 
+                    // Wall top cap (beveled slab)
+                    const cap = new THREE.Mesh(capGeo, cMat);
+                    cap.position.set(wx, h / 2 + capH / 2 + yOff, wz);
+                    cap.receiveShadow = true;
+                    this.mazeGroup.add(cap);
+
+                    // Neon edge strips on exposed sides
+                    const topY = h / 2 + capH + neonH / 2 + yOff;
+                    if (!this._tileIsWall(x, y - 1)) {
+                        const strip = new THREE.Mesh(neonGeoX, edgeMat);
+                        strip.position.set(wx, topY, wz - 0.5);
+                        this.mazeGroup.add(strip);
+                    }
+                    if (!this._tileIsWall(x, y + 1)) {
+                        const strip = new THREE.Mesh(neonGeoX, edgeMat);
+                        strip.position.set(wx, topY, wz + 0.5);
+                        this.mazeGroup.add(strip);
+                    }
+                    if (!this._tileIsWall(x - 1, y)) {
+                        const strip = new THREE.Mesh(neonGeoZ, edgeMat);
+                        strip.position.set(wx - 0.5, topY, wz);
+                        this.mazeGroup.add(strip);
+                    }
+                    if (!this._tileIsWall(x + 1, y)) {
+                        const strip = new THREE.Mesh(neonGeoZ, edgeMat);
+                        strip.position.set(wx + 0.5, topY, wz);
+                        this.mazeGroup.add(strip);
+                    }
+
                 } else if (cell === CELL.DOT) {
-                    // Each dot gets a cloned material so it can be individually hidden
                     const dot = new THREE.Mesh(dotGeo, dotMat.clone());
                     dot.position.set(wx, 0.15, wz);
                     this.mazeGroup.add(dot);
                     this.dotMeshes[`${x},${y}`] = dot;
 
                 } else if (cell === CELL.POWER) {
-                    // Power pellets get a cloned material + a point light for glow
                     const power = new THREE.Mesh(powerGeo, powerMat.clone());
                     power.position.set(wx, 0.2, wz);
                     this.mazeGroup.add(power);
                     this.powerMeshes[`${x},${y}`] = power;
 
-                    // Point light creates a warm glow around the power pellet
                     const pLight = new THREE.PointLight(0xffb8ae, 0.5, 3);
                     pLight.position.set(wx, 0.5, wz);
                     this.mazeGroup.add(pLight);
                     power.userData.light = pLight;
 
                 } else if (cell === CELL.GATE) {
-                    // Ghost house gate — thin pink bar
-                    const gateGeo = new THREE.BoxGeometry(1, 0.12, 0.15);
+                    const gateGeo = new THREE.BoxGeometry(1, 0.14, 0.18);
                     const gateMat = new THREE.MeshStandardMaterial({
                         color: 0xffb8ff,
                         emissive: 0xffb8ff,
-                        emissiveIntensity: 0.5
+                        emissiveIntensity: 0.7
                     });
                     const gate = new THREE.Mesh(gateGeo, gateMat);
-                    gate.position.set(wx, 0.06, wz);
+                    gate.position.set(wx, 0.07, wz);
                     this.mazeGroup.add(gate);
+
+                    // Glowing pillars on gate sides
+                    const pillarGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.5, 8);
+                    const pillarMat = new THREE.MeshStandardMaterial({
+                        color: 0xff88ff,
+                        emissive: 0xff88ff,
+                        emissiveIntensity: 0.8
+                    });
+                    for (const side of [-0.5, 0.5]) {
+                        const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+                        pillar.position.set(wx + side, 0.25, wz);
+                        this.mazeGroup.add(pillar);
+                    }
+
+                    // Point lights flanking the gate
+                    const gateLight = new THREE.PointLight(0xff88ff, 0.4, 3);
+                    gateLight.position.set(wx, 0.5, wz);
+                    this.mazeGroup.add(gateLight);
                 }
             }
         }
@@ -2720,10 +3014,25 @@ class Game {
             const flash = Math.floor(this.stateTimer / 15) % 2 === 0;
             this.wallMat.color.setHex(flash ? 0xffffff : 0x2121de);
             this.wallMat.emissive.setHex(flash ? 0x666666 : 0x0a0a6e);
+            if (this.wallCapMat) {
+                this.wallCapMat.color.setHex(flash ? 0xffffff : 0x3535ee);
+                this.wallCapMat.emissive.setHex(flash ? 0x888888 : 0x1515aa);
+            }
+            if (this.ghostHouseWallMat) {
+                this.ghostHouseWallMat.color.setHex(flash ? 0xddddff : 0x1a1a8e);
+                this.ghostHouseWallMat.emissive.setHex(flash ? 0x555555 : 0x0808aa);
+            }
         } else {
-            // Normal state: standard blue walls
             this.wallMat.color.setHex(0x2121de);
             this.wallMat.emissive.setHex(0x0a0a6e);
+            if (this.wallCapMat) {
+                this.wallCapMat.color.setHex(0x3535ee);
+                this.wallCapMat.emissive.setHex(0x1515aa);
+            }
+            if (this.ghostHouseWallMat) {
+                this.ghostHouseWallMat.color.setHex(0x1a1a8e);
+                this.ghostHouseWallMat.emissive.setHex(0x0808aa);
+            }
         }
     }
 
