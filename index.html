@@ -83,6 +83,18 @@
             <button class="touch-btn-sm" id="touch-reset" aria-label="Reset Options">&#8634;</button>
         </div>
 
+        <!-- Reset confirmation prompt — centered overlay, hidden by default -->
+        <div id="reset-confirm" class="hidden">
+            <div id="reset-confirm-text">RESET ALL OPTIONS?</div>
+            <div id="reset-confirm-hint">
+                <span class="keyboard-only">[Y] Yes&ensp;/&ensp;[N] No</span>
+                <span class="touch-only-inline" id="reset-confirm-buttons">
+                    <button class="reset-choice-btn" id="reset-yes">YES</button>
+                    <button class="reset-choice-btn" id="reset-no">NO</button>
+                </span>
+            </div>
+        </div>
+
         <!-- "READY!" text shown briefly before each round starts (toggled via .hidden class) -->
         <div id="ready-text" class="hidden">READY!</div>
 

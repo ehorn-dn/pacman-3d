@@ -1336,6 +1336,8 @@ class Game {
         this.readyText = document.getElementById('ready-text');
         this.helpOverlay = document.getElementById('help-overlay');
         this.helpVisible = false;
+        this.resetConfirmEl = document.getElementById('reset-confirm');
+        this.resetConfirmVisible = false;
 
         // --- Load persisted high score from localStorage ---
         this.highScore = parseInt(localStorage.getItem('pacman-high') || '0', 10);
@@ -2156,6 +2158,16 @@ class Game {
             // Ensure AudioContext is resumed on any keypress
             this.audio.resume();
 
+            // --- Reset confirmation dialog handling ---
+            if (this.resetConfirmVisible) {
+                if (e.key === 'y' || e.key === 'Y') {
+                    this.confirmReset(true);
+                } else {
+                    this.confirmReset(false);
+                }
+                return;
+            }
+
             // --- Mute toggle (works in any state) ---
             if (e.key === 'm' || e.key === 'M') {
                 this.audio.toggleMute();
@@ -2163,9 +2175,9 @@ class Game {
                 return;
             }
 
-            // --- Reset all options to defaults ---
+            // --- Reset: show confirmation prompt ---
             if (e.key === 'r' || e.key === 'R') {
-                this.resetOptions();
+                this.showResetConfirm();
                 return;
             }
 
@@ -2276,7 +2288,7 @@ class Game {
          * Same logic as the keyboard handler's direction remapping.
          */
         const setDirection = (dir) => {
-            if (this.helpVisible) return;
+            if (this.helpVisible || this.resetConfirmVisible) return;
             this.audio.resume();
             let d = dir;
             if (this.cameraMode >= 1) {
@@ -2432,13 +2444,29 @@ class Game {
             }, { passive: false });
         }
 
-        // --- Reset options button ---
+        // --- Reset options button (shows confirmation) ---
         const resetBtn = document.getElementById('touch-reset');
         if (resetBtn) {
             resetBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 this.audio.resume();
-                this.resetOptions();
+                this.showResetConfirm();
+            }, { passive: false });
+        }
+
+        // --- Reset confirmation YES / NO buttons ---
+        const resetYes = document.getElementById('reset-yes');
+        const resetNo = document.getElementById('reset-no');
+        if (resetYes) {
+            resetYes.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.confirmReset(true);
+            }, { passive: false });
+        }
+        if (resetNo) {
+            resetNo.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.confirmReset(false);
             }, { passive: false });
         }
 
@@ -2496,6 +2524,25 @@ class Game {
     updateMuteLabel() {
         const el = document.getElementById('mute-label');
         if (el) el.textContent = `[M] SOUND: ${this.audio.muted ? 'OFF' : 'ON'}`;
+    }
+
+    /**
+     * Shows the reset confirmation prompt. Blocks all other input
+     * until the user confirms (Y / YES) or cancels (any other key / NO).
+     */
+    showResetConfirm() {
+        this.resetConfirmVisible = true;
+        this.resetConfirmEl.classList.remove('hidden');
+    }
+
+    /**
+     * Handles the user's response to the reset confirmation prompt.
+     * @param {boolean} confirmed - true to proceed with reset, false to cancel
+     */
+    confirmReset(confirmed) {
+        this.resetConfirmVisible = false;
+        this.resetConfirmEl.classList.add('hidden');
+        if (confirmed) this.resetOptions();
     }
 
     /**
@@ -2759,8 +2806,7 @@ class Game {
      *   7. Check level completion
      */
     update() {
-        // Pause all updates while help overlay is visible
-        if (this.helpVisible) return;
+        if (this.helpVisible || this.resetConfirmVisible) return;
 
         this.globalTimer++;
         this.stateTimer++;

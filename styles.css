@@ -165,6 +165,14 @@ body > canvas {
     z-index: 2;
 }
 
+/* Hide keyboard-only elements on touch devices */
+.keyboard-only {
+    display: inline;
+}
+body.has-touch .keyboard-only {
+    display: none;
+}
+
 /* "[R] RESET OPTIONS" label */
 #reset-label {
     position: absolute;
@@ -174,6 +182,68 @@ body > canvas {
     color: rgba(255, 255, 255, 0.5);
     letter-spacing: 1px;
     z-index: 2;
+}
+
+/* ================================================================
+   RESET CONFIRMATION PROMPT
+   ================================================================
+   Centered overlay asking the user to confirm the reset action.
+   Semi-transparent dark backdrop with yellow prompt text.
+   ================================================================ */
+#reset-confirm {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 15;
+    pointer-events: auto;
+}
+
+#reset-confirm.hidden {
+    display: none;
+}
+
+#reset-confirm-text {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ffff00;
+    text-shadow: 0 0 12px #ffff00, 0 0 24px #ff8800;
+    letter-spacing: 4px;
+    margin-bottom: 20px;
+}
+
+#reset-confirm-hint {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 2px;
+}
+
+.reset-choice-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 10px 28px;
+    margin: 0 10px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+}
+
+.reset-choice-btn:active {
+    background: rgba(255, 255, 0, 0.25);
+    border-color: rgba(255, 255, 0, 0.5);
+    color: #ffff00;
 }
 
 /* ================================================================
