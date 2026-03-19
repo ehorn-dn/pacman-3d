@@ -2544,9 +2544,8 @@ class Game {
     confirmReset(confirmed) {
         this.resetConfirmVisible = false;
         this.resetConfirmEl.classList.add('hidden');
-        if (confirmed) {
-            this.resetOptions();
-        } else if (this.state === STATE.PLAYING) {
+        if (confirmed) this.resetOptions();
+        if (this.state === STATE.PLAYING) {
             if (this._musicBeforeReset === 'frightened' && this.frightenedActive) {
                 this.audio.startFrightened();
             } else {
