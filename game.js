@@ -1806,26 +1806,25 @@ class Game {
         const narrow = w < 600;
         const portrait = this._isPortrait();
 
-        if (this.scene.fog) {
-            const camDist = this.activeCamera.position.length();
-            this.scene.fog.density = this._baseFogDensity * (30 / Math.max(camDist, 30));
-        }
-
         if (portrait) {
             const stripH = Math.floor(h * 0.15);
             const mainH = h - stripH;
             const halfW = Math.floor(w / 2);
+
+            const savedFog = this.scene.fog;
+            this.scene.fog = null;
 
             this.renderer.setViewport(0, 0, w, mainH);
             this.renderer.setScissor(0, 0, w, mainH);
             this.renderer.setScissorTest(true);
             this.renderer.render(this.scene, this.topCamera);
 
+            this.scene.fog = savedFog;
+
             this.renderer.setViewport(0, mainH, halfW, stripH);
             this.renderer.setScissor(0, mainH, halfW, stripH);
             this.renderer.render(this.scene, this.frontCamera);
 
-            const savedFog = this.scene.fog;
             this.scene.fog = null;
             this.renderer.setViewport(halfW, mainH, w - halfW, stripH);
             this.renderer.setScissor(halfW, mainH, w - halfW, stripH);
@@ -1833,6 +1832,11 @@ class Game {
             this.renderer.setScissorTest(false);
             this.scene.fog = savedFog;
         } else {
+            if (this.scene.fog) {
+                const camDist = this.activeCamera.position.length();
+                this.scene.fog.density = this._baseFogDensity * (30 / Math.max(camDist, 30));
+            }
+
             this.renderer.setViewport(0, 0, w, h);
             this.renderer.setScissor(0, 0, w, h);
             this.renderer.setScissorTest(false);
