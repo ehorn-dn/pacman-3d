@@ -1124,20 +1124,15 @@ class Game {
         const mainH = h - Math.floor(h * 0.15);
         const viewAspect = w / mainH;
 
-        const fovDeg = 60;
-        const fovRad = THREE.MathUtils.degToRad(fovDeg);
-        const halfW_world = COLS / 2 + 1;
-        const halfH_world = ROWS / 2 + 1;
-
-        const distForHeight = halfH_world / Math.tan(fovRad / 2);
-        const distForWidth = halfW_world / (viewAspect * Math.tan(fovRad / 2));
-        const camY = Math.max(distForHeight, distForWidth) + 2;
-        const camZ = camY * 0.3;
+        const fovRad = THREE.MathUtils.degToRad(60);
+        const halfMazeW = COLS / 2 + 1;
+        const hFovHalf = Math.atan(Math.tan(fovRad / 2) * viewAspect);
+        const camY = halfMazeW / Math.tan(hFovHalf) + 4;
 
         cam.aspect = viewAspect;
         cam.updateProjectionMatrix();
-        cam.position.set(0, camY, camZ);
-        cam.lookAt(0, 0, -1);
+        cam.position.set(0, camY, camY * 0.28);
+        cam.lookAt(0, 0, 0);
     }
 
     updateCameraAspect() {
