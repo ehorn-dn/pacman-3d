@@ -1110,7 +1110,8 @@ class Game {
         const aspect = window.innerWidth / window.innerHeight;
         const cam = new THREE.PerspectiveCamera(60, aspect, 0.1, 200);
         if (this._isPortrait()) {
-            cam.position.set(0, 14, 10);
+            cam.position.set(0, 38, 8);
+            cam.lookAt(0, 0, 0);
         } else {
             cam.position.set(0, 30, 10);
             cam.lookAt(0, 0, 2);
@@ -1121,6 +1122,13 @@ class Game {
     updateCameraAspect() {
         const aspect = window.innerWidth / window.innerHeight;
 
+        if (this._isPortrait()) {
+            this.topCamera.position.set(0, 38, 8);
+            this.topCamera.lookAt(0, 0, 0);
+        } else {
+            this.topCamera.position.set(0, 30, 10);
+            this.topCamera.lookAt(0, 0, 2);
+        }
         this.topCamera.aspect = aspect;
         this.topCamera.updateProjectionMatrix();
 
@@ -1149,12 +1157,7 @@ class Game {
         const dirZ = -Math.sin(angle);
 
         if (this._isPortrait()) {
-            const topIdeal = new THREE.Vector3(px, 14, pz + 10);
-            const topTarget = new THREE.Vector3(px, 0, pz - 2);
-            this.topCamPos.lerp(topIdeal, 0.05);
-            this.topCamTarget.lerp(topTarget, 0.06);
-            this.topCamera.position.copy(this.topCamPos);
-            this.topCamera.lookAt(this.topCamTarget);
+            this.topCamera.lookAt(0, 0, 0);
         }
 
         const idealPos = new THREE.Vector3(
