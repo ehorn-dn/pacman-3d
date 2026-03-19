@@ -1338,6 +1338,8 @@ class Game {
         this.helpVisible = false;
         this.resetConfirmEl = document.getElementById('reset-confirm');
         this.resetConfirmVisible = false;
+        this.newGameConfirmEl = document.getElementById('new-game-confirm');
+        this.newGameConfirmVisible = false;
 
         // --- Load persisted high score from localStorage ---
         this.highScore = parseInt(localStorage.getItem('pacman-high') || '0', 10);
@@ -2168,6 +2170,16 @@ class Game {
                 return;
             }
 
+            // --- New game confirmation dialog handling ---
+            if (this.newGameConfirmVisible) {
+                if (e.key === 'y' || e.key === 'Y') {
+                    this.confirmNewGame(true);
+                } else {
+                    this.confirmNewGame(false);
+                }
+                return;
+            }
+
             // --- Mute toggle (works in any state) ---
             if (e.key === 'm' || e.key === 'M') {
                 this.audio.toggleMute();
@@ -2177,7 +2189,11 @@ class Game {
 
             // --- New game ---
             if (e.key === 'n' || e.key === 'N') {
-                this.startGame();
+                if (this.state === STATE.START || this.state === STATE.GAMEOVER) {
+                    this.startGame();
+                } else {
+                    this.showNewGameConfirm();
+                }
                 return;
             }
 
@@ -2294,7 +2310,7 @@ class Game {
          * Same logic as the keyboard handler's direction remapping.
          */
         const setDirection = (dir) => {
-            if (this.helpVisible || this.resetConfirmVisible) return;
+            if (this.helpVisible || this.resetConfirmVisible || this.newGameConfirmVisible) return;
             this.audio.resume();
             let d = dir;
             if (this.cameraMode >= 1) {
@@ -2466,7 +2482,27 @@ class Game {
             newGameBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 this.audio.resume();
-                this.startGame();
+                if (this.state === STATE.START || this.state === STATE.GAMEOVER) {
+                    this.startGame();
+                } else {
+                    this.showNewGameConfirm();
+                }
+            }, { passive: false });
+        }
+
+        // --- New game confirmation YES / NO buttons ---
+        const newGameYes = document.getElementById('new-game-yes');
+        const newGameNo = document.getElementById('new-game-no');
+        if (newGameYes) {
+            newGameYes.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.confirmNewGame(true);
+            }, { passive: false });
+        }
+        if (newGameNo) {
+            newGameNo.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.confirmNewGame(false);
             }, { passive: false });
         }
 
@@ -2563,6 +2599,35 @@ class Game {
         if (confirmed) this.resetOptions();
         if (this.state === STATE.PLAYING) {
             if (this._musicBeforeReset === 'frightened' && this.frightenedActive) {
+                this.audio.startFrightened();
+            } else {
+                this.audio.startSiren(this.level);
+            }
+        }
+    }
+
+    /**
+     * Shows the new game confirmation prompt. Blocks all other input
+     * until the user confirms (Y / YES) or cancels (N / NO / any other key).
+     */
+    showNewGameConfirm() {
+        this.newGameConfirmVisible = true;
+        this.newGameConfirmEl.classList.remove('hidden');
+        this._musicBeforeNewGame = this.audio.currentMusic;
+        this.audio.stopMusic();
+    }
+
+    /**
+     * Handles the user's response to the new game confirmation prompt.
+     * @param {boolean} confirmed - true to start a new game, false to cancel
+     */
+    confirmNewGame(confirmed) {
+        this.newGameConfirmVisible = false;
+        this.newGameConfirmEl.classList.add('hidden');
+        if (confirmed) {
+            this.startGame();
+        } else if (this.state === STATE.PLAYING) {
+            if (this._musicBeforeNewGame === 'frightened' && this.frightenedActive) {
                 this.audio.startFrightened();
             } else {
                 this.audio.startSiren(this.level);
@@ -2831,7 +2896,7 @@ class Game {
      *   7. Check level completion
      */
     update() {
-        if (this.helpVisible || this.resetConfirmVisible) return;
+        if (this.helpVisible || this.resetConfirmVisible || this.newGameConfirmVisible) return;
 
         this.globalTimer++;
         this.stateTimer++;

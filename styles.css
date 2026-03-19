@@ -197,12 +197,13 @@ body.has-touch .keyboard-only {
 }
 
 /* ================================================================
-   RESET CONFIRMATION PROMPT
+   CONFIRMATION PROMPTS (reset options, new game)
    ================================================================
-   Centered overlay asking the user to confirm the reset action.
+   Centered overlay asking the user to confirm an action.
    Semi-transparent dark backdrop with yellow prompt text.
    ================================================================ */
-#reset-confirm {
+#reset-confirm,
+#new-game-confirm {
     position: fixed;
     top: 0;
     left: 0;
@@ -217,11 +218,13 @@ body.has-touch .keyboard-only {
     pointer-events: auto;
 }
 
-#reset-confirm.hidden {
+#reset-confirm.hidden,
+#new-game-confirm.hidden {
     display: none;
 }
 
-#reset-confirm-text {
+#reset-confirm-text,
+#new-game-confirm-text {
     font-size: 28px;
     font-weight: bold;
     color: #ffff00;
@@ -230,13 +233,15 @@ body.has-touch .keyboard-only {
     margin-bottom: 20px;
 }
 
-#reset-confirm-hint {
+#reset-confirm-hint,
+#new-game-confirm-hint {
     font-size: 16px;
     color: rgba(255, 255, 255, 0.7);
     letter-spacing: 2px;
 }
 
-.reset-choice-btn {
+.reset-choice-btn,
+.confirm-choice-btn {
     font-family: 'Courier New', monospace;
     font-size: 14px;
     font-weight: bold;
@@ -252,7 +257,8 @@ body.has-touch .keyboard-only {
     touch-action: none;
 }
 
-.reset-choice-btn:active {
+.reset-choice-btn:active,
+.confirm-choice-btn:active {
     background: rgba(255, 255, 0, 0.25);
     border-color: rgba(255, 255, 0, 0.5);
     color: #ffff00;

@@ -97,6 +97,18 @@
             </div>
         </div>
 
+        <!-- New game confirmation prompt — centered overlay, hidden by default -->
+        <div id="new-game-confirm" class="hidden">
+            <div id="new-game-confirm-text">START NEW GAME?</div>
+            <div id="new-game-confirm-hint">
+                <span class="keyboard-only">[Y] Yes&ensp;/&ensp;[N] No</span>
+                <span class="touch-only-inline" id="new-game-confirm-buttons">
+                    <button class="confirm-choice-btn" id="new-game-yes">YES</button>
+                    <button class="confirm-choice-btn" id="new-game-no">NO</button>
+                </span>
+            </div>
+        </div>
+
         <!-- "READY!" text shown briefly before each round starts (toggled via .hidden class) -->
         <div id="ready-text" class="hidden">READY!</div>
 
