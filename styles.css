@@ -922,12 +922,12 @@ body.swipe-mode #touch-controls {
         height: 20px;
     }
 
-    /* Hide keyboard shortcut labels — touch buttons serve this purpose */
-    #camera-label,
-    #mute-label,
-    #new-game-label,
-    #reset-label,
-    #help-hint {
+    /* Hide keyboard shortcut labels only on touch devices where touch buttons replace them */
+    body.has-touch #camera-label,
+    body.has-touch #mute-label,
+    body.has-touch #new-game-label,
+    body.has-touch #reset-label,
+    body.has-touch #help-hint {
         display: none;
     }
 
@@ -1038,11 +1038,11 @@ body.swipe-mode #touch-controls {
         height: 18px;
     }
 
-    #camera-label,
-    #mute-label,
-    #new-game-label,
-    #reset-label,
-    #help-hint {
+    body.has-touch #camera-label,
+    body.has-touch #mute-label,
+    body.has-touch #new-game-label,
+    body.has-touch #reset-label,
+    body.has-touch #help-hint {
         display: none;
     }
 
