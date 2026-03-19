@@ -1804,12 +1804,11 @@ class Game {
             this.renderer.setScissor(0, mainH, halfW, stripH);
             this.renderer.render(this.scene, this.frontCamera);
 
-            const rightCam = this.cameraMode === 0 ? this.minimapCamera : this.topCamera;
             const savedFog = this.scene.fog;
             this.scene.fog = null;
             this.renderer.setViewport(halfW, mainH, w - halfW, stripH);
             this.renderer.setScissor(halfW, mainH, w - halfW, stripH);
-            this.renderer.render(this.scene, rightCam);
+            this.renderer.render(this.scene, this.minimapCamera);
             this.renderer.setScissorTest(false);
             this.scene.fog = savedFog;
         } else {
