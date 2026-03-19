@@ -89,6 +89,7 @@ body > canvas {
     width: 560px;
     max-width: 90vw;
     padding: 8px 16px;
+    gap: 16px;
     background: rgba(0, 0, 0, 0.6);
     border-radius: 8px;
     border: 1px solid rgba(33, 33, 222, 0.4);
@@ -749,6 +750,14 @@ body.swipe-mode #touch-controls {
 @media (orientation: portrait) {
     #hud {
         top: calc(15vh + 6px);
+        gap: 24px;
+        padding: 8px 20px;
+    }
+    #hud-center {
+        border-left: 1px solid rgba(255, 255, 255, 0.12);
+        border-right: 1px solid rgba(255, 255, 255, 0.12);
+        padding-left: 20px;
+        padding-right: 20px;
     }
     #touch-top-actions {
         top: calc(15vh + 50px);
@@ -780,6 +789,7 @@ body.swipe-mode #touch-controls {
         max-width: 95vw;
         padding: 6px 10px;
         top: 6px;
+        gap: 20px;
     }
 
     .hud-label {
@@ -850,6 +860,12 @@ body.swipe-mode #touch-controls {
 @media (max-width: 768px) and (orientation: portrait) {
     #hud {
         top: calc(15vh + 6px);
+        gap: 16px;
+        padding: 6px 14px;
+    }
+    #hud-center {
+        padding-left: 14px;
+        padding-right: 14px;
     }
     #lives-display {
         top: calc(15vh + 50px);
