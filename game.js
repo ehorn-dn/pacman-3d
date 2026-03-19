@@ -2533,6 +2533,8 @@ class Game {
     showResetConfirm() {
         this.resetConfirmVisible = true;
         this.resetConfirmEl.classList.remove('hidden');
+        this._musicBeforeReset = this.audio.currentMusic;
+        this.audio.stopMusic();
     }
 
     /**
@@ -2542,7 +2544,15 @@ class Game {
     confirmReset(confirmed) {
         this.resetConfirmVisible = false;
         this.resetConfirmEl.classList.add('hidden');
-        if (confirmed) this.resetOptions();
+        if (confirmed) {
+            this.resetOptions();
+        } else if (this.state === STATE.PLAYING) {
+            if (this._musicBeforeReset === 'frightened' && this.frightenedActive) {
+                this.audio.startFrightened();
+            } else {
+                this.audio.startSiren(this.level);
+            }
+        }
     }
 
     /**
