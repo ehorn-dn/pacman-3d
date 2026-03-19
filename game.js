@@ -2256,7 +2256,7 @@ class Game {
         document.body.classList.add('has-touch');
 
         // --- Control mode: 'dpad' or 'swipe', persisted in localStorage ---
-        this.touchControlMode = localStorage.getItem('pacman-control-mode') || 'dpad';
+        this.touchControlMode = localStorage.getItem('pacman-control-mode') || 'swipe';
         if (this.touchControlMode === 'swipe') {
             document.body.classList.add('swipe-mode');
         }
@@ -2556,7 +2556,7 @@ class Game {
 
     /**
      * Resets all user-configurable options to their defaults:
-     * camera → top-down, sound → on, touch control mode → dpad,
+     * camera → top-down, sound → on, touch control mode → swipe,
      * high score → 0. Clears persisted localStorage values.
      */
     resetOptions() {
@@ -2571,12 +2571,12 @@ class Game {
         }
         this.updateMuteLabel();
 
-        // Touch control mode → dpad
+        // Touch control mode → swipe
         if (this.isTouchDevice) {
-            this.touchControlMode = 'dpad';
-            document.body.classList.remove('swipe-mode');
+            this.touchControlMode = 'swipe';
+            document.body.classList.add('swipe-mode');
             const controlModeBtn = document.getElementById('touch-control-mode');
-            if (controlModeBtn) controlModeBtn.textContent = 'DPAD';
+            if (controlModeBtn) controlModeBtn.textContent = 'SWIPE';
         }
 
         // High score → 0
