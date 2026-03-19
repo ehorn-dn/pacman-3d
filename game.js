@@ -2522,9 +2522,9 @@ class Game {
             const bobY = Math.sin(t * 0.08 + g.pixelX * 0.1) * 0.04;
             mesh.position.y += bobY;
 
-            // Face the movement direction
+            // Face the movement direction (+90° offset because the mesh face points +Z)
             const angle = dirToAngle(g.dir);
-            mesh.rotation.y = angle;
+            mesh.rotation.y = angle + Math.PI / 2;
 
             // Extract sub-groups and materials for state switching
             const bodyGroup = mesh.userData.bodyGroup;
